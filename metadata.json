@@ -1,0 +1,9 @@
+{
+  "name": "Taqyeed-AI",
+  "description": "Offline meeting summarizer with AI summaries and TTS.",
+  "requestFramePermissions": [
+    "microphone",
+    "display-capture"
+  ],
+  "majorCapabilities": []
+}

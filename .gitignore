@@ -1,0 +1,25 @@
+# Dependencies & node build
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.vite/
+.originkit/
+
+# Android build artifacts and IDE cache
+android/.gradle/
+android/app/build/
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/local.properties
+android/captures/
+android/.cxx/
+
+# Tauri desktop build artifacts
+src-tauri/target/
+src-tauri/gen/

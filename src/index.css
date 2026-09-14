@@ -1,0 +1,602 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --color-card: var(--card);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-radius: var(--radius);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-sidebar: var(--sidebar);
+  --color-font-mono: var(--font-mono);
+  --color-font-sans: var(--font-sans);
+  --color-secondary: var(--secondary);
+  --color-background: var(--background);
+  --color-font-serif: var(--font-serif);
+  --color-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-shadow-blur: var(--shadow-blur);
+  --color-shadow-color: var(--shadow-color);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-shadow-spread: var(--shadow-spread);
+  --color-letter-spacing: var(--letter-spacing);
+  --color-shadow-opacity: var(--shadow-opacity);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-card-foreground: var(--card-foreground);
+  --color-shadow-offset-x: var(--shadow-offset-x);
+  --color-shadow-offset-y: var(--shadow-offset-y);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  --font-sans: "Noto Sans Arabic", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --card: #fcfcfc;
+  --ring: #006239;
+  --input: #f6f6f6;
+  --muted: #ededed;
+  --accent: #ededed;
+  --border: #dfdfdf;
+  --radius: 0.5rem;
+}
+
+html.floating-mode,
+body.floating-mode {
+  background: transparent !important;
+  background-color: transparent !important;
+  overflow: hidden !important;
+  user-select: none !important;
+}
+
+:root {
+  --chart-1: #006239;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #10b981;
+  --popover: #fcfcfc;
+  --primary: #006239;
+  --sidebar: #fcfcfc;
+  --font-mono: monospace;
+  --font-sans: "Noto Sans Arabic", Outfit, sans-serif;
+  --secondary: #fdfdfd;
+  --background: #fcfcfc;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --foreground: #171717;
+  --destructive: #ca3214;
+  --shadow-blur: 3px;
+  --shadow-color: #000000;
+  --sidebar-ring: #006239;
+  --shadow-spread: 0px;
+  --letter-spacing: 0.025em;
+  --shadow-opacity: 0.17;
+  --sidebar-accent: #ededed;
+  --sidebar-border: #dfdfdf;
+  --card-foreground: #171717;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
+  --sidebar-primary: #006239;
+  --muted-foreground: #202020;
+  --accent-foreground: #202020;
+  --popover-foreground: #525252;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #707070;
+  --secondary-foreground: #171717;
+  --destructive-foreground: #fffcfc;
+  --sidebar-accent-foreground: #202020;
+  --sidebar-primary-foreground: #ffffff;
+}
+
+.dark {
+  --card: #171717;
+  --ring: #4ade80;
+  --input: #242424;
+  --muted: #1f1f1f;
+  --accent: #313131;
+  --border: #292929;
+  --chart-1: #4ade80;
+  --chart-2: #60a5fa;
+  --chart-3: #a78bfa;
+  --chart-4: #fbbf24;
+  --chart-5: #2dd4bf;
+  --popover: #242424;
+  --primary: #006239;
+  --sidebar: #121212;
+  --secondary: #242424;
+  --background: #121212;
+  --foreground: #e2e8f0;
+  --destructive: #541c15;
+  --sidebar-ring: #4ade80;
+  --sidebar-accent: #313131;
+  --sidebar-border: #292929;
+  --card-foreground: #e2e8f0;
+  --sidebar-primary: #006239;
+  --muted-foreground: #a2a2a2;
+  --accent-foreground: #fafafa;
+  --popover-foreground: #a9a9a9;
+  --primary-foreground: #dde8e3;
+  --sidebar-foreground: #898989;
+  --secondary-foreground: #fafafa;
+  --destructive-foreground: #ede9e8;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-primary-foreground: #dde8e3;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: var(--letter-spacing);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Green Moving Border Effects (Buttons & Pinned Notes)
+   ───────────────────────────────────────────────────────────── */
+@keyframes spin-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Floating (+) Green button with Green Moving Border */
+.moving-green-border-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  padding: 2.5px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.moving-green-border-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 32px rgba(16, 185, 129, 0.65), 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.moving-green-border-btn:active {
+  transform: scale(0.95);
+}
+
+.moving-green-border-btn::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 180deg,
+    #059669 220deg,
+    #10b981 270deg,
+    #86efac 320deg,
+    #34d399 360deg
+  );
+  animation: spin-border 2.8s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.moving-green-border-btn > .btn-inner {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #006239 100%);
+  color: #ffffff;
+  border-radius: 9999px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Pinned Note with Green Moving Border */
+.moving-green-border-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: 2px;
+  background: transparent;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.moving-green-border-card::before {
+  content: '';
+  position: absolute;
+  top: -75%;
+  left: -75%;
+  width: 250%;
+  height: 250%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 240deg,
+    #15803d 280deg,
+    #22c55e 320deg,
+    #4ade80 345deg,
+    #10b981 360deg
+  );
+  animation: spin-border 4s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.moving-green-border-card > .card-inner {
+  position: relative;
+  z-index: 1;
+  background-color: var(--card);
+  border-radius: calc(1.25rem - 2px);
+  width: 100%;
+  height: 100%;
+}
+
+/* AI Enhance Button: Circle with Moving Border */
+.moving-border-circle-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  padding: 1.5px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.moving-border-circle-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+}
+
+.moving-border-circle-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.moving-border-circle-btn::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 180deg,
+    #15803d 230deg,
+    #22c55e 290deg,
+    #4ade80 335deg,
+    #10b981 360deg
+  );
+  animation: spin-border 2.5s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.moving-border-circle-btn > .circle-inner {
+  position: relative;
+  z-index: 1;
+  background-color: var(--card);
+  color: var(--foreground);
+  border-radius: 9999px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Auto Font Color for Titles & Sub-Titles: Emerald Green
+   (Unless an explicit custom user color is set)
+   ───────────────────────────────────────────────────────────── */
+
+/* Light Theme / Light Paper: Auto title & subtitle color is signature deep emerald */
+.paper-light :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-light .tiptap :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-light .read-only-view :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+:not(.dark) .tiptap :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+:not(.dark) .read-only-view :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-light :where(h1, h2, h3, h4, h5, h6) {
+  color: #006239 !important; /* Signature Taqyeed Deep Emerald */
+  font-weight: 700 !important;
+}
+
+/* Dark Theme / Dark Paper: Auto title & subtitle color is radiant vivid emerald */
+.paper-dark :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-dark .tiptap :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-dark .read-only-view :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.dark .tiptap :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.dark .read-only-view :is(h1, h2, h3, h4, h5, h6):not([style*="color"]),
+.paper-dark :where(h1, h2, h3, h4, h5, h6) {
+  color: #10b981 !important; /* Vivid Emerald Green */
+  font-weight: 700 !important;
+}
+
+/* Prevent white/invisible titles on light paper even if prose-invert or system dark mode applies */
+.paper-light :is(h1, h2, h3, h4, h5, h6)[style*="color: white" i],
+.paper-light :is(h1, h2, h3, h4, h5, h6)[style*="color: #fff" i],
+.paper-light :is(h1, h2, h3, h4, h5, h6)[style*="color: #ffffff" i],
+.paper-light :is(h1, h2, h3, h4, h5, h6)[style*="color: rgb(255, 255, 255)" i],
+.paper-light :is(h1, h2, h3, h4, h5, h6)[style*="color: rgb(248, 250, 252)" i],
+.paper-light .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: white" i],
+.paper-light .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: #fff" i],
+.paper-light .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: #ffffff" i],
+.paper-light .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: rgb(255, 255, 255)" i],
+:not(.dark) .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: white" i],
+:not(.dark) .tiptap :is(h1, h2, h3, h4, h5, h6)[style*="color: #fff" i] {
+  color: #006239 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Remove All Text Highlight Backgrounds (No Ugly Highlight Markers)
+   Use Italics & Colors (Golden, Emerald Green, Crimson Red) Instead
+   ───────────────────────────────────────────────────────────── */
+.tiptap mark,
+.read-only-view mark,
+mark,
+[data-highlight] {
+  background: transparent !important;
+  background-color: transparent !important;
+  font-style: italic !important;
+  font-weight: 600 !important;
+  color: #b45309 !important; /* Golden Amber emphasis in light mode */
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.dark .tiptap mark,
+.dark .read-only-view mark,
+.dark mark,
+.paper-dark mark,
+.paper-dark .tiptap mark {
+  color: #f59e0b !important; /* Radiant Golden in dark mode */
+}
+
+/* Strip text background highlights inside note editor */
+.tiptap [style*="background-color" i]:not(table):not(table *):not(pre):not(pre *):not(code),
+.tiptap [style*="background:" i]:not(table):not(table *):not(pre):not(pre *):not(code),
+.read-only-view [style*="background-color" i]:not(table):not(table *):not(pre):not(pre *):not(code),
+.read-only-view [style*="background:" i]:not(table):not(table *):not(pre):not(pre *):not(code) {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Semantic Highlights (Pure Font Styling without Background Tints) */
+.highlight-red, [data-highlight="red"] {
+  color: #dc2626 !important;
+  font-style: italic !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+.dark .highlight-red, .paper-dark .highlight-red {
+  color: #f87171 !important;
+}
+
+.highlight-green, [data-highlight="green"] {
+  color: #059669 !important;
+  font-style: italic !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+.dark .highlight-green, .paper-dark .highlight-green {
+  color: #10b981 !important;
+}
+
+.highlight-gold, .highlight-golden, [data-highlight="gold"], [data-highlight="golden"] {
+  color: #b45309 !important;
+  font-style: italic !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+.dark .highlight-gold, .paper-dark .highlight-gold {
+  color: #f59e0b !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Contrast Shield: Strictly Prevent Invisible Text in Light & Dark Themes
+   ───────────────────────────────────────────────────────────── */
+
+/* Light Theme: Disallow white/light font colors */
+:not(.dark) .tiptap [style*="color: #fff" i],
+:not(.dark) .tiptap [style*="color: #FFF" i],
+:not(.dark) .tiptap [style*="color: white" i],
+:not(.dark) .tiptap [style*="color: rgb(255, 255, 255)" i],
+:not(.dark) .tiptap [style*="color: rgb(248, 250, 252)" i],
+:not(.dark) .tiptap [style*="color: rgb(241, 245, 249)" i],
+:not(.dark) .tiptap [style*="color: rgb(226, 232, 240)" i],
+:not(.dark) .tiptap [style*="color:#fff" i],
+:not(.dark) .tiptap [style*="color:#FFF" i],
+:not(.dark) .tiptap [style*="color:white" i],
+:not(.dark) .tiptap [style*="color:#f8fafc" i],
+:not(.dark) .tiptap [style*="color:#f1f5f9" i],
+:not(.dark) .tiptap [style*="color:#e2e8f0" i],
+:not(.dark) .tiptap [style*="color:#fafafa" i],
+:not(.dark) .tiptap [style*="color:#f5f5f5" i],
+.read-only-view:not(.dark) [style*="color: white" i],
+.read-only-view:not(.dark) [style*="color: #fff" i],
+.read-only-view:not(.dark) [style*="color: #ffffff" i],
+.paper-light .tiptap [style*="color: white" i],
+.paper-light .tiptap [style*="color: #fff" i] {
+  color: #0f172a !important;
+}
+
+/* Dark Theme: Disallow black/dark font colors */
+.dark .tiptap [style*="color: #000" i],
+.dark .tiptap [style*="color: #000000" i],
+.dark .tiptap [style*="color: black" i],
+.dark .tiptap [style*="color: rgb(0, 0, 0)" i],
+.dark .tiptap [style*="color: rgb(15, 23, 42)" i],
+.dark .tiptap [style*="color: rgb(23, 23, 23)" i],
+.dark .tiptap [style*="color: rgb(30, 41, 59)" i],
+.dark .tiptap [style*="color:#000" i],
+.dark .tiptap [style*="color:#000000" i],
+.dark .tiptap [style*="color:black" i],
+.dark .tiptap [style*="color:#0f172a" i],
+.dark .tiptap [style*="color:#171717" i],
+.dark .tiptap [style*="color:#1e293b" i],
+.dark .tiptap [style*="color:#09090b" i],
+.dark .read-only-view [style*="color: black" i],
+.dark .read-only-view [style*="color: #000" i],
+.dark .read-only-view [style*="color: #000000" i],
+.paper-dark .tiptap [style*="color: black" i],
+.paper-dark .tiptap [style*="color: #000" i] {
+  color: #f8fafc !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Global Typography Overrides
+   ───────────────────────────────────────────────────────────── */
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6,
+.prose p, .prose ul, .prose ol, .prose li {
+  font-size: 1.125rem !important;
+  color: var(--foreground) !important;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  font-weight: bold !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Islamic Scholarly Semantic Typography (UI Matching PDF)
+   ───────────────────────────────────────────────────────────── */
+.ayah, [data-semantic="ayah"] {
+  color: #b45309 !important;
+  font-weight: 700 !important;
+  font-style: italic !important;
+  background: transparent !important;
+}
+.dark .ayah, .dark [data-semantic="ayah"],
+.paper-dark .ayah, .paper-dark [data-semantic="ayah"] {
+  color: #f59e0b !important;
+}
+
+.hadith, [data-semantic="hadith"] {
+  color: #059669 !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+}
+.dark .hadith, .dark [data-semantic="hadith"],
+.paper-dark .hadith, .paper-dark [data-semantic="hadith"] {
+  color: #10b981 !important;
+}
+
+.citation, .reference, [data-semantic="citation"] {
+  color: #64748b !important;
+  font-style: italic !important;
+  font-weight: 300 !important;
+  font-size: 0.85em !important;
+  background: transparent !important;
+}
+.dark .citation, .dark .reference, .dark [data-semantic="citation"],
+.paper-dark .citation, .paper-dark .reference, .paper-dark [data-semantic="citation"] {
+  color: #94a3b8 !important;
+  font-weight: 300 !important;
+  font-size: 0.85em !important;
+}
+
+.important, [data-semantic="important"] {
+  color: #b45309 !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+}
+.dark .important, .dark [data-semantic="important"],
+.paper-dark .important, .paper-dark [data-semantic="important"] {
+  color: #f59e0b !important;
+}
+
+/* Note Zoom Canvas */
+.note-zoom-canvas {
+  transform-origin: top center;
+  transition: zoom 0.1s ease-out;
+}
+
+/* Inline Citations – non-bold, smaller, muted */
+.citation {
+  font-weight: 300 !important;
+  font-size: 0.8em !important;
+  color: var(--muted-foreground, #6b7280) !important;
+  opacity: 0.85;
+}
+.dark .citation {
+  color: #9ca3af !important;
+}
+
+/* ── Suppress native Android/iOS long-press context menu inside the editor ── */
+/* -webkit-touch-callout: none blocks the iOS callout popup.                   */
+/* -webkit-user-select: text keeps text selectable for our AI bubble.          */
+.editing-view,
+.editing-view .ProseMirror,
+.editing-view .tiptap-wrapper {
+  -webkit-touch-callout: none;
+}
+
+@keyframes redWavePulse {
+  0% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.35);
+  }
+}
