@@ -248,7 +248,7 @@ export function RecordingBottomBar({ onSavedNote }: RecordingBottomBarProps) {
                   type="button"
                   disabled={isProcessing}
                   onClick={handleStopAndSave}
-                  className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-muted transition-all group cursor-pointer active:scale-95 text-center"
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl border border-border/80 hover:border-foreground/30 bg-muted/20 hover:bg-muted/60 transition-all group cursor-pointer active:scale-95 text-center"
                 >
                   <div className="w-12 h-12 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform text-foreground">
                     <Check className="w-6 h-6" strokeWidth={1.5} />
@@ -263,7 +263,7 @@ export function RecordingBottomBar({ onSavedNote }: RecordingBottomBarProps) {
                   type="button"
                   disabled={isProcessing}
                   onClick={handleContinueAndWrite}
-                  className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-muted transition-all group cursor-pointer active:scale-95 text-center"
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl border border-border/80 hover:border-foreground/30 bg-muted/20 hover:bg-muted/60 transition-all group cursor-pointer active:scale-95 text-center"
                 >
                   <div className="w-12 h-12 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform text-foreground">
                     <PenLine className="w-6 h-6" strokeWidth={1.5} />
