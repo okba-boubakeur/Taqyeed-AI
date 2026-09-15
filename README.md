@@ -1,8 +1,8 @@
 <div align="center">
 
 # Taqyeed AI (تقييد)
-### The Premier Open-Source AI Note-Taking, Custom Prompt Studio & Lecture Companion for Students of Islamic Knowledge & Academic Researchers Worldwide
-#### صناعة وتخصيص أدوات وإجراءات الذكاء الاصطناعي، تدوين ذكي، نسخ صوتي مباشر، وتخريج فوري للأحاديث — مفتوح المصدر
+### Bind Your Knowledge — Smart Lecture Recording, Note-Taking & Custom AI Actions
+#### قَيِّدْ عِلْمَكَ — تدوين ذكي وتسجيل للدروس والمحاضرات مع أدوات ذكاء اصطناعي مخصصة لطلبة العلم — مفتوح المصدر
 
 [![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Web-blue.svg?style=for-the-badge)](#-downloads--releases)
