@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore, defaultAiActionPrompts, AiActionPrompts, QuickActionItem, defaultQuickActions, defaultGeneralActions } from '../store';
 import {
-  Save,
   Play,
   Monitor,
   Sun,
@@ -408,13 +407,6 @@ export function SettingsScreen() {
       showToast(isRtl ? 'تمت استعادة الإجراءات السريعة الافتراضية' : 'Reset to default quick actions', 'success');
     }
   };
-
-
-  const handleSave = () => {
-    updateSettings(localSettings);
-    showToast('Settings saved successfully!', 'success');
-  };
-
 
   const providerOptions = [
     { value: 'gemini', label: 'Google Gemini (API Key)' },
@@ -1147,15 +1139,7 @@ export function SettingsScreen() {
           </AnimatePresence>
         </section>
 
-        <div className="pt-4 pb-12 md:pb-4 flex justify-end">
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-colors font-medium shadow-sm cursor-pointer"
-          >
-            <Save className="w-5 h-5" />
-            {t.saveChanges}
-          </button>
-        </div>
+        <div className="pb-12 md:pb-6" />
 
         {/* ── Add / Edit Quick Action Modal ── */}
         <AnimatePresence>
