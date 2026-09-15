@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, Trash2, Check, AlertTriangle, Square, Pen, X } from 'lucide-react';
+import { Play, Pause, Trash2, Check, AlertTriangle, Square, PenLine, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore } from '../store';
 import { useRecorder } from '../hooks/useRecorder';
@@ -201,7 +201,8 @@ export function RecordingBottomBar({ onSavedNote }: RecordingBottomBarProps) {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          Save Options Modal: "Stop & Save" vs "Continue & Write"
+          Save Options Modal: "Save" vs "Continue & Write"
+          Styled identically to CreationFloatingButton choice modal
           ───────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showSaveOptions && (
@@ -211,69 +212,70 @@ export function RecordingBottomBar({ onSavedNote }: RecordingBottomBarProps) {
             onClick={() => !isProcessing && setShowSaveOptions(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.15 }}
-              className="bg-card border border-border rounded-3xl w-full max-w-sm shadow-2xl p-5 pt-4 relative"
               onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.15 }}
+              className="bg-card border border-border rounded-3xl p-6 md:p-7 shadow-2xl max-w-sm sm:max-w-md w-full relative overflow-hidden"
             >
-              {/* Close (X) Button — top right */}
-              <button
-                type="button"
-                onClick={() => setShowSaveOptions(false)}
-                disabled={isProcessing}
-                className="absolute top-3.5 end-3.5 p-1.5 text-foreground hover:bg-muted rounded-full transition-colors cursor-pointer"
-              >
-                <X className="w-4.5 h-4.5" strokeWidth={1.5} />
-              </button>
-
-              {/* Option 1: Stop & Save */}
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={handleStopAndSave}
-                className="w-full flex items-center gap-3.5 p-3.5 mt-5 mb-3 bg-muted/50 hover:bg-muted border border-border/60 rounded-2xl transition-all active:scale-[0.98] cursor-pointer group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-foreground/5 group-hover:bg-foreground/10 flex items-center justify-center shrink-0 transition-colors">
-                  <Square className="w-4.5 h-4.5 text-foreground" strokeWidth={1.5} />
-                </div>
-                <div className="text-start flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    {isRtl ? 'إيقاف وحفظ' : 'Stop & Save'}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="text-lg md:text-xl font-bold text-foreground">
+                    {isRtl ? 'حفظ أو متابعة التدوين' : 'Save or Continue'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {isRtl
-                      ? 'يوقف التسجيل ويحفظ الملاحظة الصوتية مباشرة'
-                      : 'Stops recording and saves audio note directly'}
+                      ? 'اختر حفظ التسجيل الصوتي أو متابعة التدوين والكتابة أثناء التسجيل'
+                      : 'Choose to save audio note or write while recording'}
                   </p>
                 </div>
-              </button>
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => setShowSaveOptions(false)}
+                  className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+              </div>
 
-              {/* Option 2: Continue & Write */}
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={handleContinueAndWrite}
-                className="w-full flex items-center gap-3.5 p-3.5 mb-1 bg-muted/50 hover:bg-muted border border-border/60 rounded-2xl transition-all active:scale-[0.98] cursor-pointer group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-foreground/5 group-hover:bg-foreground/10 flex items-center justify-center shrink-0 transition-colors">
-                  <Pen className="w-4.5 h-4.5 text-foreground" strokeWidth={1.5} />
-                </div>
-                <div className="text-start flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    {isRtl ? 'متابعة وكتابة' : 'Continue & Write'}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
-                    {isRtl
-                      ? 'يفتح ملاحظة جديدة للكتابة أثناء استمرار التسجيل'
-                      : 'Opens a note to write while recording continues'}
-                  </p>
-                </div>
-              </button>
+              {/* 2 Options Grid identical to Home Screen Creation modal */}
+              <div className="grid grid-cols-2 gap-3 md:gap-3.5">
+                {/* Option 1: Save */}
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={handleStopAndSave}
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-muted transition-all group cursor-pointer active:scale-95 text-center"
+                >
+                  <div className="w-12 h-12 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform text-foreground">
+                    <Check className="w-6 h-6" strokeWidth={1.5} />
+                  </div>
+                  <span className="font-bold text-sm md:text-base text-foreground">
+                    {isRtl ? 'حفظ' : 'Save'}
+                  </span>
+                </button>
+
+                {/* Option 2: Continue & Write */}
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={handleContinueAndWrite}
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-muted transition-all group cursor-pointer active:scale-95 text-center"
+                >
+                  <div className="w-12 h-12 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform text-foreground">
+                    <PenLine className="w-6 h-6" strokeWidth={1.5} />
+                  </div>
+                  <span className="font-bold text-sm md:text-base text-foreground">
+                    {isRtl ? 'متابعة وكتابة' : 'Continue Write'}
+                  </span>
+                </button>
+              </div>
 
               {isProcessing && (
-                <div className="absolute inset-0 bg-card/80 rounded-3xl flex items-center justify-center">
+                <div className="absolute inset-0 bg-card/80 rounded-3xl flex items-center justify-center z-10">
                   <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               )}

@@ -1003,9 +1003,11 @@ export function SettingsScreen() {
                 <div className="bg-muted/30 p-5 md:p-6 rounded-2xl border border-border space-y-5">
                   {/* App Branding & Author */}
                   <div className="flex items-center gap-3.5 sm:gap-4 pb-4 border-b border-border/60">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-muted/30 border border-border flex items-center justify-center p-2 shrink-0 shadow-xs">
-                      <img src="/logo.svg" alt="Taqyeed AI Logo" className="w-full h-full object-contain" />
-                    </div>
+                    <img
+                      src="/logo.svg"
+                      alt="Taqyeed AI Logo"
+                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
