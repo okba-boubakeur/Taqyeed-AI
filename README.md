@@ -14,16 +14,6 @@
 [![BYOK](https://img.shields.io/badge/BYOK-Google%20Gemini%20(Free)%20%7C%20OpenRouter-orange.svg?style=for-the-badge)](#3--bring-your-own-key-byok--free-gemini-tier)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge)](#-contributing--community)
 
-<p align="center">
-  <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.apk"><strong>📱 Download APK (Android)</strong></a> •
-  <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.exe"><strong>💻 Download EXE (Windows)</strong></a> •
-  <a href="#-why-taqyeed-vs-other-apps"><strong>⚖️ Compare vs Competitors</strong></a> •
-  <a href="#-core-features"><strong>⚡ Core Features</strong></a> •
-  <a href="#-quick-start"><strong>🛠️ Quick Start</strong></a> •
-  <a href="#-faq"><strong>❓ FAQ</strong></a> •
-  <a href="#-contributing--community"><strong>🤝 Contributing</strong></a>
-</p>
-
 </div>
 
 ---
