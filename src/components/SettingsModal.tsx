@@ -22,8 +22,6 @@ import {
   Send,
   ExternalLink,
   Heart,
-  Scale,
-  GitPullRequest,
   CheckCheck,
   ListTree,
   FileText,
@@ -1120,39 +1118,27 @@ export function SettingsScreen() {
                     </div>
                   </div>
 
-                  {/* License & Open for contribution notice (Centered) */}
-                  <div className="p-4 sm:p-5 rounded-xl bg-background/60 border border-border/80 flex flex-col items-center justify-center text-center gap-3.5 text-xs">
-                    <div className="flex flex-col items-center text-center gap-2">
-                      <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                        <Scale className="w-4 h-4" />
+                  {/* Call for Contribution Card (Identical layout to GitHub social card with floating button gradient/outline) */}
+                  <a
+                    href="https://github.com/okba-boubakeur/Taqyeed-AI"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openExternalUrl('https://github.com/okba-boubakeur/Taqyeed-AI');
+                    }}
+                    className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 hover:from-emerald-400 hover:via-emerald-500 hover:to-emerald-700 border border-emerald-400/50 text-white shadow-md shadow-emerald-600/20 transition-all group cursor-pointer active:scale-[0.99]"
+                    title={isRtl ? 'المساهمة في المشروع على GitHub' : 'Contribute on Github'}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/20 text-white flex items-center justify-center shrink-0">
+                        <Github className="w-4 h-4" />
                       </div>
-                      <div>
-                        <div className="font-semibold text-foreground flex items-center justify-center gap-1.5">
-                          <span>MIT License</span>
-                          <span className="text-muted-foreground font-normal">•</span>
-                          <span className="text-primary font-medium">
-                            {isRtl ? 'مفتوح للمساهمات' : 'Open for Contribution'}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-1 max-w-sm mx-auto">
-                          {isRtl
-                            ? 'هذا المشروع حر ومفتوح المصدر تحت رخصة MIT ومتاح للمساهمات والتطوير.'
-                            : 'This project is open-source under MIT License and open for community contributions.'}
-                        </p>
+                      <div className="truncate">
+                        <div className="text-xs font-bold text-white">Contribute on Github</div>
+                        <div className="text-[11px] text-white/80 truncate">MIT Licence</div>
                       </div>
                     </div>
-                    <a
-                      href="https://github.com/okba-boubakeur"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        openExternalUrl('https://github.com/okba-boubakeur');
-                      }}
-                      className="px-4 py-2 bg-transparent hover:bg-muted/60 text-primary border border-primary/30 rounded-xl transition-colors font-semibold text-xs flex items-center gap-2 mx-auto cursor-pointer shadow-xs active:scale-95"
-                    >
-                      <GitPullRequest className="w-3.5 h-3.5" />
-                      <span>{isRtl ? 'المساهمة عبر GitHub' : 'Contribute on GitHub'}</span>
-                    </a>
-                  </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-white/80 group-hover:text-white transition-colors shrink-0" />
+                  </a>
                 </div>
               </motion.div>
             )}
