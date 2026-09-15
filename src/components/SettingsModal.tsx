@@ -1002,28 +1002,26 @@ export function SettingsScreen() {
               >
                 <div className="bg-muted/30 p-5 md:p-6 rounded-2xl border border-border space-y-5">
                   {/* App Branding & Author */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-border/60">
-                    <div className="w-14 h-14 rounded-2xl bg-transparent border border-border flex items-center justify-center p-2 shrink-0 shadow-sm">
+                  <div className="flex items-center gap-3.5 sm:gap-4 pb-4 border-b border-border/60">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-muted/30 border border-border flex items-center justify-center p-2 shrink-0 shadow-xs">
                       <img src="/logo.svg" alt="Taqyeed AI Logo" className="w-full h-full object-contain" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-lg font-bold text-foreground tracking-tight">
+                        <h4 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
                           {t.appName}
                         </h4>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
                           v1.0.0
                         </span>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
                           MIT License
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
-                        <span>
-                          {isRtl
-                            ? 'تم تطوير هذا المشروع من طرف عقبة بوبكر - الجزائر'
-                            : 'This project was made by Boubakeur Okba - Algeria'}
-                        </span>
+                      <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                        {isRtl
+                          ? 'تم تطوير هذا المشروع من طرف عقبة بوبكر - الجزائر'
+                          : 'This project was made by Boubakeur Okba - Algeria'}
                       </p>
                     </div>
                   </div>
