@@ -107,12 +107,12 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'geminiApiKey',
     keyPlaceholder: 'Enter Gemini key (starts with AIzaSy)',
     keyPlaceholderAr: 'أدخل مفتاح Gemini (يبدأ بـ AIzaSy)',
-    defaultModel: 'gemini-3.8-flash',
+    defaultModel: 'gemini-2.5-flash',
     models: [
-      { value: 'gemini-3.8-flash', label: 'gemini-3.8-flash (Recommended)' },
+      { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Recommended)' },
       { value: 'gemini-2.5-flash-lite', label: 'gemini-2.5-flash-lite' },
-      { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash' },
       { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash' },
+      { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' },
     ],
     guide: {
       title: 'How to Get a Free Google Gemini API Key',

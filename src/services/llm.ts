@@ -46,7 +46,7 @@ export function getEffectiveApiKey(settings: Settings, providerOverride?: LLMPro
 export function getDefaultModelForProvider(provider: LLMProvider): string {
   switch (provider) {
     case 'gemini':
-      return 'gemini-3.8-flash';
+      return 'gemini-2.5-flash';
     case 'openrouter':
       return 'openrouter/free';
     case 'qwen':
@@ -66,7 +66,7 @@ export function getDefaultModelForProvider(provider: LLMProvider): string {
     case 'sidecar':
       return 'gemini-flash';
     default:
-      return 'gemini-3.8-flash';
+      return 'gemini-2.5-flash';
   }
 }
 
@@ -81,7 +81,7 @@ export function sanitizeModelName(model: string, provider: LLMProvider | string)
     m = m.replace(/^[a-zA-Z0-9_-]+\//, '');
     m = m.replace(/:(?:batch|free|default|nitro)$/i, '');
     if (!m || !m.includes('gemini')) {
-      return 'gemini-3.8-flash';
+      return 'gemini-2.5-flash';
     }
     return m;
   }
@@ -131,7 +131,7 @@ export function sanitizeModelName(model: string, provider: LLMProvider | string)
     return 'gemini-flash';
   }
 
-  return m || 'gemini-3.8-flash';
+  return m || 'gemini-2.5-flash';
 }
 
 export interface ProviderEndpointConfig {
@@ -971,13 +971,7 @@ export async function* streamEnhanceContent(
         return;
       } catch (geminiErr: any) {
         console.warn(`Gemini Enhancement Error (Model: ${model}):`, geminiErr);
-        try {
-          const sanitizedModel = sanitizeModelName(model, 'sidecar');
-          yield* streamEnhanceContentSidecar(htmlContent, targetSidecarUrl, sanitizedModel, language, customPrompt);
-          return;
-        } catch {
-          throw geminiErr;
-        }
+        throw geminiErr;
       }
     }
   }
@@ -1000,14 +994,8 @@ export async function* streamEnhanceContent(
       yield { enhanced: fullText, done: true };
       return;
     } catch (err: any) {
-      console.warn(`${activeProvider} stream enhancement failed, falling back to sidecar:`, err);
-      try {
-        const sanitizedModel = sanitizeModelName(model, 'sidecar');
-        yield* streamEnhanceContentSidecar(htmlContent, targetSidecarUrl, sanitizedModel, language, customPrompt);
-        return;
-      } catch {
-        throw err;
-      }
+      console.warn(`${activeProvider} stream enhancement failed:`, err);
+      throw err;
     }
   }
 
@@ -1052,7 +1040,8 @@ export async function executeTargetedQuickAction(
       const text = response.text || '';
       if (text.trim()) return text.trim();
     } catch (err) {
-      console.warn('Gemini direct quick action failed, falling back:', err);
+      console.warn('Gemini direct quick action failed:', err);
+      throw err;
     }
   } else if (activeProvider !== 'sidecar' && effectiveKey) {
     // 2. OpenAI-compatible or Anthropic
@@ -1064,7 +1053,8 @@ export async function executeTargetedQuickAction(
       const text = await callProviderLlm(activeProvider, effectiveKey, model, messages, settings.customApiBaseUrl);
       if (text.trim()) return text.trim();
     } catch (err) {
-      console.warn(`${activeProvider} quick action failed, falling back to sidecar:`, err);
+      console.warn(`${activeProvider} quick action failed:`, err);
+      throw err;
     }
   }
 
