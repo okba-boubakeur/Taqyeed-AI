@@ -26,7 +26,7 @@
 > ### 💡 What is Taqyeed AI? (قَيِّدْ عِلْمَكَ)
 > **Taqyeed AI (تقييد)** is a free, local-first, privacy-respecting AI note-taking and audio transcription application purpose-built for students of Islamic Sciences (*Talabat al-’Ilm ash-Shar’i*) and academic researchers around the globe. Inspired by the classical Arabic adage **«قَيِّدُوا العِلْمَ بِالكِتَابِ»** (*"Bind knowledge by writing it down"*), Taqyeed AI bridges centuries-old academic diligence with state-of-the-art Generative AI.
 > 
-> Unlike generic note-taking apps, Taqyeed AI lets you **write notes while actively recording lectures in real-time**, employs smart AI de-duplication so existing student writings are preserved without repetition, brings instant Hadith Takhrij and citation formatting, and exports publication-grade academic PDFs with Arabic-native RTL formatting.
+> Unlike generic note-taking apps, Taqyeed AI lets you **write notes while actively recording lectures in real-time**, employs smart AI de-duplication so your personal writings are never overwritten, empowers students with a **built-in AI Action Studio to create, edit, and customize your own AI prompts**, and exports publication-grade academic PDFs with **customizable warm paper backgrounds, textures, and Arabic-native RTL formatting**.
 
 ---
 
@@ -57,21 +57,26 @@ Get the latest standalone releases directly:
 * **OpenRouter Support (100+ Models):** Access Claude 3.5 Sonnet, DeepSeek-V3, Llama 3.3 70B, Mistral, Qwen, and more using Bring-Your-Own-Key (BYOK).
 * **Real-Time Key Testing & Smart Cross-Validation:** Instant "Test" button verifies key validity before you use it. Includes automatic detection preventing users from mistakenly using a Gemini key (`AIzaSy...`) on OpenRouter or vice versa, with a 1-click provider switch banner.
 
-### 📜 3. Custom Academic & Sharia Actions Engine
-* **Takhrij & Source Citation ("التخريج والمراجع والمصادر"):** Instantly isolate Hadith quotes, identify narrator chains (*Isnad*), and format references with classical scholarly standards.
-* **Fiqh & Grammar Polish ("تنقيح نحوي وفقهي"):** Refine technical Islamic terminology, correct Tashkeel/harakat, and structure fiqh rulings (*Ahkam*) cleanly.
-* **Full Prompt Customization:** Add, edit, reorder, toggle, or delete floating quick actions for selected text, or general actions for the entire note. Every prompt can be modified to match your specific study discipline.
+### 📜 3. Customizable Academic & Sharia AI Actions Engine (Prompt Studio)
+* **Build & Customize Your Own AI Actions:** Students are never locked into rigid presets. Create completely new AI actions from scratch with custom instructions, Lucide icons, and bilingual Arabic/English titles tailored to your exact discipline (Hadith critique, Usul al-Fiqh, Arabic grammar, Medical terminology, Comparative Law).
+* **Edit Any Prompt & Criteria:** Modify instructions for Hadith Takhrij (target specific classical collections like *Kutub as-Sittah* or *Musnad Ahmad*), dictate preferred juristic Madhhab conventions, or customize academic summary structures.
+* **Dual-Context Action Workflows:**
+  * **Selection Quick Actions (Smart Bubble Menu):** Highlight any text in your note to instantly trigger contextual actions (*Grammar Parsing / I'rab*, *Hadith Takhrij*, *Vocabulary Explainer*, *Translate*, *Summarize Highlight*).
+  * **General Note Actions (Floating AI Assistant):** Execute comprehensive analysis on the entire lecture note (*Generate Complete Study Guide*, *Extract Key Fiqh Rulings*, *Generate Self-Testing Flashcard Questions*, *Format Classical Citations*).
+* **Visual Action Manager:** Easily enable or disable actions, delete unwanted tools, reorder your workflow, or restore factory defaults with a single click.
 
-### 📄 4. Publication-Ready Academic PDF Export
-* **Bilingual RTL/LTR Architecture:** Powered by `pdfmake-rtl` with native handling of Arabic typography, right-to-left layout, and English inline quotations.
-* **Dedicated References Section Styling:** The references section (*والتخريج والمراجع والمصادر*) is automatically separated with an elegant divider line, styled in an unbolded scholarly font, and calibrated with subtle contrast for optimal readability.
-* **Clean List & Table Alignment:** Bullet points, numbered proofs (*Adillah*), and tables render crisp and aligned without vertical bar glitches or punctuation reversals.
+### 📄 4. Publication-Ready Academic PDF Export with Custom Paper Backgrounds
+* **Custom Paper Palettes (Not Sterile White):** Exported PDFs automatically render on your chosen **authentic paper color palette**:
+  * *Scholar's Light Palettes:* **Warm Peach** (`#ffedd5`), **Soft Amber** (`#fed7aa`), **Light Gray** (`#f5f5f5`), **Paper White** (`#fafafa`), **Warm Yellow** (`#fef3c7`).
+  * *Nocturnal Dark Palettes:* **Deep Slate** (`#171717`), **Warm Stone** (`#1c1917`), **Neutral Dark** (`#262626`), **Midnight Black** (`#0c0a09`), **Zinc** (`#18181b`).
+* **Custom Background Patterns & Textures:** Apply subtle vintage paper textures, geometric patterns, or user-uploaded background images with canvas pre-fill to give your exported PDFs the feel of authentic historical manuscripts or fine-bound academic books.
+* **Dynamic Luminance & Text Contrast Inversion:** The PDF engine automatically analyzes the paper background luminance (`isDarkPaper`). Dark paper documents seamlessly switch to crisp ivory/white text, while light paper uses deep charcoal/black, with borders and divider lines balanced dynamically.
+* **Dedicated References Section Styling:** The references section (*والتخريج والمراجع والمصادر*) is automatically partitioned by an elegant divider line, styled in an unbolded scholarly font, and softened with subtle contrast for genuine academic publication aesthetics.
+* **Bilingual RTL/LTR Architecture & Typesetting:** Native Arabic typesetting using the Tajawal font family via `pdfmake-rtl`, with zero punctuation reversals, perfect table borders, and crisp bullet points.
 
 ### 🎨 5. Eye-Friendly Study Aesthetics & Monochrome Design
 * **Strict Monochrome Toolbar Icons:** Clean, distraction-free monochrome action icons across navigation bars, floating buttons, and menus for a unified feel in both light and dark modes.
-* **Custom Paper Color Palettes:** Choose from soothing, warm paper reading tones:
-  * *Light*: Warm Peach (`#ffedd5`), Soft Amber (`#fed7aa`), Light Gray (`#f5f5f5`), Paper White (`#fafafa`), Warm Yellow (`#fef3c7`).
-  * *Dark*: Deep Slate (`#171717`), Neutral Dark (`#262626`), Warm Stone (`#1c1917`), Midnight Black (`#0c0a09`), Zinc (`#18181b`).
+* **Curated Visual Themes:** Synchronized paper color schemes between the interactive live editor and exported PDFs for an immersive, eye-friendly reading experience.
 
 ### 🔒 6. Privacy & 100% Local-First Architecture
 * **IndexedDB via Dexie.js:** Your notes, voice recordings, folders, and settings remain stored securely on your device.
@@ -87,6 +92,8 @@ Get the latest standalone releases directly:
 | **Simultaneous Record & Type** | **Yes** | Plugin only | No | No | No |
 | **Smart Note De-duplication** | **Yes** | No | No | No | No |
 | **Islamic Sciences & Takhrij Engine** | **Yes** | No | No | No | No |
+| **Custom AI Actions & Prompt Studio** | **Yes (Built-in Manager)** | Plugin only | No | No | No |
+| **Custom PDF Paper Backgrounds** | **Yes (10 Palettes & Textures)**| CSS only | No | No | No |
 | **Arabic RTL-First Design** | **Native** | Plugin only | Limited | Limited | Limited |
 | **Academic References PDF Styling** | **Yes** | Requires CSS | No | No | No |
 | **Multi-LLM BYOK (Gemini / OpenRouter)**| **Yes** | Plugin only | No | No | No |
@@ -153,6 +160,12 @@ npm run tauri build
 
 ### Why is Taqyeed AI specifically beneficial for Islamic Studies (Talabat al-’Ilm)?
 Students of Islamic knowledge often attend intensive scholarly lectures (*Duroos*) lasting 1–3 hours where the Sheikh cites verses, hadiths, classical books (*Kutub*), and juristic opinions. Taqyeed AI enables the student to type their immediate reflections while the audio recorder runs in the background. After the lesson, Taqyeed AI fills in missing citations, formats references, and provides scholarly summaries without overwriting the student's personal notes.
+
+### Can students create, edit, and customize their own AI prompts in Taqyeed AI?
+**Yes, completely.** Taqyeed AI includes a built-in **Quick & General Actions Manager**. You can edit any existing prompt (such as tuning Hadith Takhrij to prioritize specific scholars or books), create brand new custom actions from scratch with custom instructions and Lucide icons, toggle actions on/off to keep your workspace clean, and choose whether they run on highlighted text (Smart Selection menu) or the entire document (Floating AI button).
+
+### Can I customize the background color and style of exported PDF notes?
+**Yes, with full palette control.** Taqyeed AI lets you export documents on curated physical-paper palettes (including Warm Peach, Soft Amber, Light Gray, Paper White, Warm Yellow, Deep Slate, Neutral Dark, Warm Stone, Midnight Black, and Zinc) or custom paper textures. The PDF engine automatically inverts text color and adjusts contrast depending on whether you choose a light or dark paper background, producing beautiful, book-quality documents instead of sterile blank PDFs.
 
 ### Can students and researchers outside of Islamic studies use Taqyeed AI?
 **Yes, absolutely.** Taqyeed AI is completely flexible. All prompt actions, formatting styles, and AI settings can be customized for university courses, medical studies, legal research, conference proceedings, or business meetings.
