@@ -208,13 +208,19 @@ export function Header({ onBack }: HeaderProps) {
 
             <AnimatePresence>
               {menuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className={`absolute ${isRtl ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-card border border-border rounded-2xl shadow-xl py-2 z-50 overflow-hidden`}
-                >
+                <>
+                  <div
+                    className="fixed inset-0 z-40 bg-transparent cursor-default"
+                    onClick={() => setMenuOpen(false)}
+                    onTouchStart={() => setMenuOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className={`absolute ${isRtl ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-card border border-border rounded-2xl shadow-xl py-2 z-50 overflow-hidden`}
+                  >
                   {/* ── CASE 1: Note is Open -> Strictly Note-Related Options + Settings ── */}
                   {isNoteOpen ? (
                     <>
@@ -347,7 +353,8 @@ export function Header({ onBack }: HeaderProps) {
                     </>
                   )}
                 </motion.div>
-              )}
+              </>
+            )}
             </AnimatePresence>
           </div>
         </div>

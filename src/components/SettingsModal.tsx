@@ -488,7 +488,9 @@ export function SettingsScreen() {
 
                   {/* App Language */}
                   <div className="pt-2 border-t border-border/60">
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">App Language</label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
+                      {isRtl ? 'لغة التطبيق' : 'App Language'}
+                    </label>
                     <CustomSelect
                       value={localSettings.language}
                       options={languageOptions}
