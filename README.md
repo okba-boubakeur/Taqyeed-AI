@@ -182,8 +182,8 @@ To report a bug or request a feature, please [open an issue on GitHub](https://g
 
 Licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
 
-### لوجه الله تعالى (Dedication)
-> هذا العمل وقفٌ خيري وصدقة جارية لوجه الله تعالى، صُمِّم وطُوِّر خدمةً لطلبة العلم الشرعي والباحثين وطلاب المعرفة في كل مكان. نسأل الله أن ينفع به كاتبه وقارئه ومطوره ومَن ساهم فيه ونشره.
+###  هذا العمل وقفٌ خيري وصدقة جارية لوجه الله تعالى (Dedication)
+>صُمِّم وطُوِّر خدمةً لطلبة العلم الشرعي والباحثين وطلاب المعرفة في كل مكان. نسأل الله أن ينفع به كاتبه وقارئه ومطوره ومَن ساهم فيه ونشره.
 > 
 > *"This work is dedicated for the sake of Allah — an ongoing charity (Sadaqah Jariyah) in service of students of Islamic knowledge and researchers worldwide. We pray that Allah accepts it and benefits everyone who uses, develops, or shares it."*
 
