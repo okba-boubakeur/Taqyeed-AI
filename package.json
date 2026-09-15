@@ -1,5 +1,6 @@
 {
   "name": "Taqyeed-AI",
+  "description": "The Premier Open-Source AI Note-Taking, Custom Prompt Studio & Lecture Companion for Students of Islamic Knowledge & Academic Researchers Worldwide",
   "private": true,
   "version": "0.1.0",
   "type": "module",
