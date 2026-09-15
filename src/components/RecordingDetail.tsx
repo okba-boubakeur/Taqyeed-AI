@@ -23,7 +23,7 @@ import { exportToPDF } from '../services/pdfExport';
 import { AnimatedMarkdown } from 'flowtoken';
 import 'flowtoken/dist/styles.css';
 import { marked } from 'marked';
-import { streamSummaryFromAudio, generateTitleFromSummary } from '../services/llm';
+import { streamSummaryFromAudio, generateTitleFromSummary, getEffectiveApiKey } from '../services/llm';
 import { useAppStore } from '../store';
 import { translations } from '../translations';
 import { isTauri } from '../services/platform';
@@ -204,9 +204,10 @@ export function RecordingDetail({ id, onBack, onDelete, autoSummarize = false }:
 
       if (!targetBlob) throw new Error("No audio payload found.");
 
+      const effectiveApiKey = getEffectiveApiKey(settings);
       const stream = streamSummaryFromAudio(
         targetBlob,
-        settings.llmProvider === 'gemini' ? settings.geminiApiKey : settings.openRouterApiKey,
+        effectiveApiKey,
         settings.llmModel,
         settings.systemPrompt,
         settings.llmProvider,
@@ -222,7 +223,7 @@ export function RecordingDetail({ id, onBack, onDelete, autoSummarize = false }:
 
       const newTitle = await generateTitleFromSummary(
         finalSummary,
-        settings.llmProvider === 'gemini' ? settings.geminiApiKey : settings.openRouterApiKey,
+        effectiveApiKey,
         settings.llmModel,
         settings.language,
         settings.llmProvider,

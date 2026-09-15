@@ -23,3 +23,7 @@ android/.cxx/
 # Tauri desktop build artifacts
 src-tauri/target/
 src-tauri/gen/
+
+# Editor / workspace settings
+*.code-workspace
+

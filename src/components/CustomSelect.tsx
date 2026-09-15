@@ -7,6 +7,8 @@ export interface Option {
   value: string;
   label: string;
   icon?: React.ElementType;
+  image?: string;
+  badge?: string;
 }
 
 export interface CustomSelectProps {
@@ -17,6 +19,7 @@ export interface CustomSelectProps {
   direction?: 'auto' | 'up' | 'down';
   placeholder?: string;
   disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 interface DropdownCoords {
@@ -36,6 +39,7 @@ export function CustomSelect({
   direction = "auto",
   placeholder,
   disabled = false,
+  size = 'md',
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState<DropdownCoords | null>(null);
@@ -57,8 +61,9 @@ export function CustomSelect({
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
 
-    // Estimate menu height (~38px per option + 12px padding)
-    const estimatedHeight = Math.min(options.length * 38 + 12, 260);
+    // Estimate menu height
+    const itemHeight = size === 'lg' ? 56 : 38;
+    const estimatedHeight = Math.min(options.length * itemHeight + 16, size === 'lg' ? 400 : 260);
 
     const shouldDropUp =
       direction === 'up' ||
@@ -71,12 +76,14 @@ export function CustomSelect({
       left = Math.max(8, window.innerWidth - menuWidth - 8);
     }
 
+    const maxHeightLimit = size === 'lg' ? 400 : 260;
+
     if (shouldDropUp) {
       setCoords({
         bottom: window.innerHeight - rect.top + 4,
         left,
         width: menuWidth,
-        maxHeight: Math.max(120, Math.min(spaceAbove - 16, 260)),
+        maxHeight: Math.max(120, Math.min(spaceAbove - 16, maxHeightLimit)),
         dropUp: true,
       });
     } else {
@@ -84,11 +91,11 @@ export function CustomSelect({
         top: rect.bottom + 4,
         left,
         width: menuWidth,
-        maxHeight: Math.max(120, Math.min(spaceBelow - 16, 260)),
+        maxHeight: Math.max(120, Math.min(spaceBelow - 16, maxHeightLimit)),
         dropUp: false,
       });
     }
-  }, [direction, options.length]);
+  }, [direction, options.length, size]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -127,20 +134,31 @@ export function CustomSelect({
             setIsOpen((prev) => !prev);
           }
         }}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-all outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
-          disabled ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
+        className={`w-full flex items-center justify-between gap-3 bg-muted border border-border transition-all outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
+          size === 'lg'
+            ? 'min-h-[58px] px-4 py-3 rounded-2xl text-[16px] sm:text-[17px] font-bold text-foreground hover:bg-accent'
+            : 'px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-accent'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <div className="flex items-center gap-2 truncate">
-          {selectedOption?.icon && (
-            <selectedOption.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-          )}
+        <div className="flex items-center gap-3 truncate">
+          {selectedOption?.image ? (
+            <div className={`shrink-0 flex items-center justify-center ${size === 'lg' ? 'w-9 h-9 rounded-xl bg-background/80 p-1 border border-border/60 shadow-xs' : 'w-4 h-4'}`}>
+              <img src={selectedOption.image} alt="" className={`${size === 'lg' ? 'w-7 h-7' : 'w-4 h-4'} object-contain`} />
+            </div>
+          ) : selectedOption?.icon ? (
+            <selectedOption.icon className={`${size === 'lg' ? 'w-6 h-6' : 'w-4 h-4'} text-muted-foreground shrink-0`} />
+          ) : null}
           <span className="truncate">
             {selectedOption ? selectedOption.label : placeholder || ''}
           </span>
+          {selectedOption?.badge && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background/80 font-normal text-muted-foreground border border-border/60 shrink-0">
+              {selectedOption.badge}
+            </span>
+          )}
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-muted-foreground transition-transform duration-200 shrink-0 ${
+          className={`${size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} text-muted-foreground transition-transform duration-200 shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -179,7 +197,7 @@ export function CustomSelect({
                     maxHeight: coords.maxHeight,
                     zIndex: 9999,
                   }}
-                  className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden py-1 backdrop-blur-md"
+                  className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden py-1.5 backdrop-blur-md"
                   dir={document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr'}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -195,20 +213,33 @@ export function CustomSelect({
                           onChange(option.value);
                           setIsOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-muted cursor-pointer text-left rtl:text-right ${
+                        className={`w-full flex items-center justify-between transition-colors hover:bg-muted cursor-pointer text-left rtl:text-right ${
+                          size === 'lg'
+                            ? 'px-4 py-3 min-h-[52px] text-[15px] sm:text-[16px] font-semibold'
+                            : 'px-3 py-2 text-sm'
+                        } ${
                           value === option.value
-                            ? 'text-primary bg-primary/10 font-semibold'
+                            ? 'text-primary bg-primary/10 font-bold'
                             : 'text-foreground'
                         }`}
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          {option.icon && (
-                            <option.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                          )}
+                        <div className="flex items-center gap-3 truncate">
+                          {option.image ? (
+                            <div className={`shrink-0 flex items-center justify-center ${size === 'lg' ? 'w-9 h-9 rounded-xl bg-background/80 p-1 border border-border/60 shadow-xs' : 'w-4 h-4'}`}>
+                              <img src={option.image} alt="" className={`${size === 'lg' ? 'w-7 h-7' : 'w-4 h-4'} object-contain`} />
+                            </div>
+                          ) : option.icon ? (
+                            <option.icon className={`${size === 'lg' ? 'w-6 h-6' : 'w-4 h-4'} text-muted-foreground shrink-0`} />
+                          ) : null}
                           <span className="truncate">{option.label}</span>
+                          {option.badge && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted font-normal text-muted-foreground border border-border/50 shrink-0">
+                              {option.badge}
+                            </span>
+                          )}
                         </div>
                         {value === option.value && (
-                          <Check className="w-4 h-4 text-primary shrink-0" />
+                          <Check className={`${size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} text-primary shrink-0`} />
                         )}
                       </button>
                     ))}

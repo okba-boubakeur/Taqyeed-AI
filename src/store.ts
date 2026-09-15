@@ -315,10 +315,30 @@ export const defaultGeneralActions: QuickActionItem[] = [
   },
 ];
 
+export type LLMProvider =
+  | 'gemini'
+  | 'openrouter'
+  | 'deepseek'
+  | 'qwen'
+  | 'kimi'
+  | 'grok'
+  | 'chatgpt'
+  | 'anthropic'
+  | 'custom'
+  | 'sidecar';
+
 export interface Settings {
-  llmProvider: 'gemini' | 'openrouter' | 'sidecar';
+  llmProvider: LLMProvider;
   geminiApiKey: string;
   openRouterApiKey: string;
+  deepseekApiKey?: string;
+  qwenApiKey?: string;
+  kimiApiKey?: string;
+  grokApiKey?: string;
+  chatgptApiKey?: string;
+  anthropicApiKey?: string;
+  customApiKey?: string;
+  customApiBaseUrl?: string;
   sidecarUrl: string;
   llmModel: string;
   language: Language;
@@ -405,6 +425,14 @@ export const useAppStore = create<AppState>()(
         llmProvider: 'gemini',
         geminiApiKey: '',
         openRouterApiKey: '',
+        deepseekApiKey: '',
+        qwenApiKey: '',
+        kimiApiKey: '',
+        grokApiKey: '',
+        chatgptApiKey: '',
+        anthropicApiKey: '',
+        customApiKey: '',
+        customApiBaseUrl: '',
         sidecarUrl: 'http://127.0.0.1:47195',
         llmModel: 'gemini-2.5-flash',
         language: 'ar',

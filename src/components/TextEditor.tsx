@@ -18,7 +18,7 @@ import {
 import { getCounterpartBackground } from '../services/backgroundThemeSync';
 import { useAppStore, defaultAiActionPrompts, AiActionPrompts, QuickActionItem, defaultQuickActions, defaultGeneralActions, worldLanguages } from '../store';
 import { translations } from '../translations';
-import { streamEnhanceContent, executeTargetedQuickAction } from '../services/llm';
+import { streamEnhanceContent, executeTargetedQuickAction, getEffectiveApiKey } from '../services/llm';
 import { exportToPDF } from '../services/pdfExport';
 import { db, Note } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -1192,8 +1192,13 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     }
 
     const { settings, setIsAiProcessing } = useAppStore.getState();
-    const apiKey = settings.llmProvider === 'gemini' ? settings.geminiApiKey : settings.openRouterApiKey;
-    if (settings.llmProvider !== 'sidecar' && !apiKey && !settings.geminiApiKey && !settings.openRouterApiKey) {
+    const apiKey = getEffectiveApiKey(settings);
+    if (settings.llmProvider === 'custom') {
+      if (!settings.customApiBaseUrl?.trim()) {
+        showToast(isRtl ? 'يرجى إدخال رابط الخادم (Base URL) في الإعدادات.' : 'Please configure your Base URL in Settings.', 'error');
+        return;
+      }
+    } else if (settings.llmProvider !== 'sidecar' && !apiKey) {
       showToast(isRtl ? 'يرجى ضبط مفتاح API في الإعدادات أو تفعيل بوابة تقييد.' : 'Please configure your API key or activate Taqyeed Gate in Settings.', 'error');
       return;
     }
@@ -1352,9 +1357,10 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     }
 
     const { settings: currentSettings, setIsAiProcessing } = useAppStore.getState();
-    const effectiveKey = (currentSettings.llmProvider === 'gemini' ? currentSettings.geminiApiKey : currentSettings.openRouterApiKey) || currentSettings.geminiApiKey;
-    if (currentSettings.llmProvider !== 'sidecar' && !effectiveKey) {
-      showToast(isRtl ? 'يرجى إدخال مفتاح Gemini API في الإعدادات أو الاتصال ببوابة تقييد' : 'Please configure Gemini API key in Settings or connect Taqyeed Gate', 'error');
+    const effectiveKey = getEffectiveApiKey(currentSettings);
+    const hasAudioCapability = currentSettings.llmProvider === 'sidecar' || currentSettings.geminiApiKey || (currentSettings.llmProvider === 'gemini' && effectiveKey);
+    if (!hasAudioCapability) {
+      showToast(isRtl ? 'معالجة الصوت تتطلب مفتاح Gemini API في الإعدادات أو الاتصال ببوابة تقييد' : 'Audio processing requires Gemini API key in Settings or Taqyeed Gate', 'error');
       return;
     }
 

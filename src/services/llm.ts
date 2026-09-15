@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { defaultSystemPrompt, useAppStore } from '../store';
+import { defaultSystemPrompt, useAppStore, LLMProvider, Settings } from '../store';
 import {
   streamSummaryFromAudioSidecar,
   generateSummaryFromTextSidecar,
@@ -10,35 +10,119 @@ import {
 } from './sidecar';
 
 /**
+ * Helper to retrieve the saved API key for any given provider.
+ */
+export function getEffectiveApiKey(settings: Settings, providerOverride?: LLMProvider): string {
+  const provider = providerOverride || settings.llmProvider;
+  switch (provider) {
+    case 'gemini':
+      return settings.geminiApiKey || (process as any).env?.GEMINI_API_KEY || '';
+    case 'openrouter':
+      return settings.openRouterApiKey || '';
+    case 'deepseek':
+      return settings.deepseekApiKey || '';
+    case 'qwen':
+      return settings.qwenApiKey || '';
+    case 'kimi':
+      return settings.kimiApiKey || '';
+    case 'grok':
+      return settings.grokApiKey || '';
+    case 'chatgpt':
+      return settings.chatgptApiKey || '';
+    case 'anthropic':
+      return settings.anthropicApiKey || '';
+    case 'custom':
+      return settings.customApiKey || 'custom-key';
+    case 'sidecar':
+      return '';
+    default:
+      return '';
+  }
+}
+
+/**
+ * Returns default recommended cheapest model for each provider.
+ */
+export function getDefaultModelForProvider(provider: LLMProvider): string {
+  switch (provider) {
+    case 'gemini':
+      return 'gemini-3.8-flash';
+    case 'openrouter':
+      return 'openrouter/free';
+    case 'qwen':
+      return 'qwen3.7-flash';
+    case 'deepseek':
+      return 'deepseek-flash';
+    case 'kimi':
+      return 'kimi-k2.6';
+    case 'grok':
+      return 'grok-code-fast-1';
+    case 'chatgpt':
+      return 'gpt-4o-mini';
+    case 'anthropic':
+      return 'claude-3-5-haiku-20241022';
+    case 'custom':
+      return 'default';
+    case 'sidecar':
+      return 'gemini-flash';
+    default:
+      return 'gemini-3.8-flash';
+  }
+}
+
+/**
  * Sanitizes model identifiers to prevent provider mismatches, CORS preflight errors,
  * and 404s (e.g. stripping OpenRouter prefixes/suffixes like "google/" or ":batch").
  */
-export function sanitizeModelName(model: string, provider: 'gemini' | 'openrouter' | 'sidecar' | string): string {
+export function sanitizeModelName(model: string, provider: LLMProvider | string): string {
   let m = (model || '').trim();
 
   if (provider === 'gemini') {
-    // Strip provider prefix e.g. "google/", "meta-llama/"
     m = m.replace(/^[a-zA-Z0-9_-]+\//, '');
-    // Strip batch/free/nitro routing suffixes e.g. ":batch", ":free"
     m = m.replace(/:(?:batch|free|default|nitro)$/i, '');
-    // If empty or non-existent experimental/future version like "gemini-3.8-flash"
-    if (!m || m.startsWith('gemini-3') || !m.includes('gemini')) {
-      return 'gemini-2.5-flash';
+    if (!m || !m.includes('gemini')) {
+      return 'gemini-3.8-flash';
     }
     return m;
   }
 
   if (provider === 'openrouter') {
-    // OpenRouter rejects ":batch" models on the /chat/completions endpoint
     m = m.replace(/:batch$/i, '');
-    if (!m || m.includes('gemini-3.8')) {
-      return 'google/gemini-2.5-flash';
-    }
-    // If Gemini model without provider prefix, prepend google/
+    if (!m) return 'openrouter/free';
+    if (m === 'openrouter/free') return 'openrouter/free';
     if (m.startsWith('gemini-') && !m.includes('/')) {
       return `google/${m}`;
     }
     return m;
+  }
+
+
+  if (provider === 'qwen') {
+    return m || 'qwen3.7-flash';
+  }
+
+  if (provider === 'deepseek') {
+    return m || 'deepseek-flash';
+  }
+
+  if (provider === 'kimi') {
+    return m || 'kimi-k2.6';
+  }
+
+  if (provider === 'grok') {
+    return m || 'grok-code-fast-1';
+  }
+
+  if (provider === 'chatgpt') {
+    return m || 'gpt-4o-mini';
+  }
+
+  if (provider === 'anthropic') {
+    return m || 'claude-3-5-haiku-20241022';
+  }
+
+  if (provider === 'custom') {
+    return m || 'default';
   }
 
   if (provider === 'sidecar') {
@@ -47,12 +131,428 @@ export function sanitizeModelName(model: string, provider: 'gemini' | 'openroute
     return 'gemini-flash';
   }
 
-  return m || 'gemini-2.5-flash';
+  return m || 'gemini-3.8-flash';
+}
+
+export interface ProviderEndpointConfig {
+  baseUrl: string;
+  isOpenAiCompatible: boolean;
+  extraHeaders?: (key: string) => Record<string, string>;
+}
+
+export function getProviderConfig(provider: LLMProvider, customBaseUrl?: string): ProviderEndpointConfig {
+  switch (provider) {
+    case 'openrouter':
+      return {
+        baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
+        isOpenAiCompatible: true,
+        extraHeaders: () => ({
+          'HTTP-Referer': 'https://taqyeed.app',
+          'X-Title': 'Taqyeed AI Notes',
+        }),
+      };
+    case 'deepseek':
+      return {
+        baseUrl: 'https://api.deepseek.com/chat/completions',
+        isOpenAiCompatible: true,
+      };
+    case 'qwen':
+      return {
+        baseUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
+        isOpenAiCompatible: true,
+      };
+    case 'kimi':
+      return {
+        baseUrl: 'https://api.moonshot.ai/v1/chat/completions',
+        isOpenAiCompatible: true,
+      };
+    case 'grok':
+      return {
+        baseUrl: 'https://api.x.ai/v1/chat/completions',
+        isOpenAiCompatible: true,
+      };
+    case 'chatgpt':
+      return {
+        baseUrl: 'https://api.openai.com/v1/chat/completions',
+        isOpenAiCompatible: true,
+      };
+    case 'anthropic':
+      return {
+        baseUrl: 'https://api.anthropic.com/v1/messages',
+        isOpenAiCompatible: false,
+      };
+    case 'custom': {
+      const cleanUrl = (customBaseUrl || '').trim().replace(/\/+$/, '');
+      const fullUrl = cleanUrl.endsWith('/chat/completions')
+        ? cleanUrl
+        : cleanUrl.endsWith('/v1')
+        ? `${cleanUrl}/chat/completions`
+        : cleanUrl
+        ? `${cleanUrl}/v1/chat/completions`
+        : 'http://localhost:11434/v1/chat/completions';
+      return {
+        baseUrl: fullUrl,
+        isOpenAiCompatible: true,
+      };
+    }
+    default:
+      return {
+        baseUrl: '',
+        isOpenAiCompatible: false,
+      };
+  }
+}
+
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
 }
 
 /**
- * Safely converts an audio Blob into a base64 string using chunked ArrayBuffer,
- * avoiding stack overflow or empty strings on large media blobs.
+ * Universal caller for non-streaming OpenAI-compatible & Anthropic providers
+ */
+async function callProviderLlm(
+  provider: LLMProvider,
+  apiKey: string,
+  model: string,
+  messages: ChatMessage[],
+  customBaseUrl?: string
+): Promise<string> {
+  const sanitized = sanitizeModelName(model, provider);
+
+  if (provider === 'anthropic') {
+    const systemMsg = messages.find((m) => m.role === 'system')?.content;
+    const userMsgs = messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role, content: m.content }));
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: sanitized,
+        max_tokens: 4096,
+        ...(systemMsg ? { system: systemMsg } : {}),
+        messages: userMsgs,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(`Anthropic error (${res.status}): ${err}`);
+    }
+    const data = await res.json();
+    return data.content?.[0]?.text?.trim() || '';
+  }
+
+  // OpenAI-compatible providers
+  const config = getProviderConfig(provider, customBaseUrl);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(apiKey && apiKey !== 'custom-key' ? { Authorization: `Bearer ${apiKey}` } : {}),
+    ...(config.extraHeaders ? config.extraHeaders(apiKey) : {}),
+  };
+
+  const res = await fetch(config.baseUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: sanitized,
+      messages,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`${provider} error (${res.status}): ${err}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content?.trim() || '';
+}
+
+/**
+ * Universal streaming generator for OpenAI-compatible & Anthropic providers
+ */
+async function* streamProviderLlm(
+  provider: LLMProvider,
+  apiKey: string,
+  model: string,
+  messages: ChatMessage[],
+  customBaseUrl?: string
+): AsyncGenerator<{ token: string }> {
+  const sanitized = sanitizeModelName(model, provider);
+
+  let url: string;
+  let headers: Record<string, string>;
+  let body: any;
+
+  if (provider === 'anthropic') {
+    url = 'https://api.anthropic.com/v1/messages';
+    headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    };
+    const systemMsg = messages.find((m) => m.role === 'system')?.content;
+    const userMsgs = messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role, content: m.content }));
+    body = {
+      model: sanitized,
+      max_tokens: 4096,
+      ...(systemMsg ? { system: systemMsg } : {}),
+      messages: userMsgs,
+      stream: true,
+    };
+  } else {
+    const config = getProviderConfig(provider, customBaseUrl);
+    url = config.baseUrl;
+    headers = {
+      'Content-Type': 'application/json',
+      ...(apiKey && apiKey !== 'custom-key' ? { Authorization: `Bearer ${apiKey}` } : {}),
+      ...(config.extraHeaders ? config.extraHeaders(apiKey) : {}),
+    };
+    body = {
+      model: sanitized,
+      messages,
+      stream: true,
+    };
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`${provider} streaming error (${res.status}): ${err}`);
+  }
+
+  if (!res.body) {
+    throw new Error('No response body from provider');
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith(':')) continue;
+      if (trimmed === 'data: [DONE]') break;
+      if (trimmed.startsWith('data: ')) {
+        try {
+          const parsed = JSON.parse(trimmed.slice(6));
+          const token =
+            parsed.choices?.[0]?.delta?.content ||
+            parsed.delta?.text ||
+            '';
+          if (token) {
+            yield { token };
+          }
+        } catch {}
+      }
+    }
+  }
+}
+
+/**
+ * Validates connection and API Key validity across all 9 providers
+ */
+export async function testProviderApiKey(
+  provider: LLMProvider,
+  key: string,
+  customBaseUrl?: string
+): Promise<{ success: boolean; message?: string }> {
+  const cleanKey = (key || '').trim();
+  if (!cleanKey && provider !== 'sidecar' && provider !== 'custom') {
+    return { success: false, message: 'API key is required' };
+  }
+
+  try {
+    if (provider === 'gemini') {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanKey)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'openrouter') {
+      const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'deepseek') {
+      const res = await fetch('https://api.deepseek.com/models', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'qwen') {
+      const res = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || data.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'kimi') {
+      const res = await fetch('https://api.moonshot.ai/v1/models', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+
+    if (provider === 'grok') {
+      const res = await fetch('https://api.x.ai/v1/models', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'chatgpt') {
+      const res = await fetch('https://api.openai.com/v1/models', {
+        headers: { Authorization: `Bearer ${cleanKey}` },
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'anthropic') {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': cleanKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 1,
+          messages: [{ role: 'user', content: 'test' }],
+        }),
+      });
+      if (res.ok) {
+        return { success: true };
+      }
+      const data = await res.json().catch(() => ({}));
+      const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'custom') {
+      const cleanUrl = (customBaseUrl || '').trim();
+      if (!cleanUrl) {
+        return { success: false, message: 'Base URL is required for custom provider' };
+      }
+      const base = cleanUrl.replace(/\/+$/, '');
+      const testUrl = base.endsWith('/chat/completions')
+        ? base
+        : base.endsWith('/v1')
+        ? `${base}/chat/completions`
+        : `${base}/v1/chat/completions`;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (cleanKey && cleanKey !== 'custom-key') {
+        headers['Authorization'] = `Bearer ${cleanKey}`;
+      }
+
+      const modelsUrl = base.endsWith('/chat/completions')
+        ? base.replace(/\/chat\/completions$/, '/models')
+        : `${base.replace(/\/v1$/, '')}/v1/models`;
+
+      const res = await fetch(modelsUrl, { headers }).catch(() => null);
+      if (res && res.ok) {
+        return { success: true };
+      }
+
+      const compRes = await fetch(testUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: 'default',
+          max_tokens: 1,
+          messages: [{ role: 'user', content: 'test' }],
+        }),
+      });
+
+      if (compRes.ok) {
+        return { success: true };
+      }
+      const compData = await compRes.json().catch(() => ({}));
+      const msg = compData.error?.message || `HTTP ${compRes.status}: ${compRes.statusText}`;
+      return { success: false, message: msg };
+    }
+
+    if (provider === 'sidecar') {
+      const res = await fetch('http://127.0.0.1:47195/health').catch(() => null);
+      if (res && res.ok) {
+        return { success: true };
+      }
+      return { success: false, message: 'Sidecar daemon is offline (port 47195)' };
+    }
+
+    return { success: false, message: 'Unknown provider' };
+  } catch (err: any) {
+    return { success: false, message: err.message || 'Connection failed' };
+  }
+}
+
+/**
+ * Safely converts an audio Blob into a base64 string using chunked ArrayBuffer
  */
 async function blobToBase64(blob: Blob): Promise<string> {
   try {
@@ -92,7 +592,7 @@ export async function* streamSummaryFromAudio(
   sidecarUrl?: string
 ): AsyncGenerator<{ transcript?: string; summary?: string; done?: boolean }> {
   const settings = useAppStore.getState().settings;
-  const activeProvider = provider || settings.llmProvider;
+  const activeProvider = (provider || settings.llmProvider) as LLMProvider;
   const targetSidecarUrl = sidecarUrl || settings.sidecarUrl;
 
   // 1. If active provider is sidecar, stream directly via local daemon
@@ -102,8 +602,7 @@ export async function* streamSummaryFromAudio(
     return;
   }
 
-  // 2. OpenRouter does not support direct audio uploads on /chat/completions.
-  // Check if a Gemini API key is available; if not, route to Taqyeed Gate Sidecar seamlessly.
+  // 2. Audio uploads require Gemini multimodal capabilities or Sidecar
   const effectiveGeminiKey = (activeProvider === 'gemini' ? apiKey : settings.geminiApiKey) || (process as any).env?.GEMINI_API_KEY;
 
   if (!effectiveGeminiKey) {
@@ -114,7 +613,7 @@ export async function* streamSummaryFromAudio(
       return;
     } catch (sidecarErr: any) {
       throw new Error(
-        'Gemini API Key is missing and Taqyeed Gate is offline. Please enter a valid Gemini API key or connect Taqyeed Gate in Settings.'
+        'Audio processing requires either a Google Gemini API Key or the Taqyeed Gate Sidecar running locally.'
       );
     }
   }
@@ -133,7 +632,6 @@ export async function* streamSummaryFromAudio(
   if (isLargeAudio) {
     console.log(`[Audio LLM] Large audio detected (${Math.round(audioBlob.size / 1024 / 1024)}MB). Uploading via Gemini Files API...`);
     try {
-      // In @google/genai, upload expects { file, config: { mimeType } }
       const uploadResult = await (ai as any).files.upload({
         file: audioBlob,
         config: {
@@ -162,17 +660,14 @@ export async function* streamSummaryFromAudio(
       yield { done: true };
       return;
     } catch (uploadErr: any) {
-      console.warn('[Audio LLM] Gemini Files API upload failed. Falling back to Taqyeed Gate Sidecar for large file handling:', uploadErr);
-      // Large audio (>20MB) cannot use inlineData without exceeding Google API request size limit.
-      // Automatically fallback to Taqyeed Gate Sidecar:
+      console.warn('[Audio LLM] Gemini Files API upload failed. Falling back to Taqyeed Gate Sidecar:', uploadErr);
       try {
         const sanitizedModel = sanitizeModelName(model, 'sidecar');
         yield* streamSummaryFromAudioSidecar(audioBlob, targetSidecarUrl, sanitizedModel, systemPrompt);
         return;
       } catch (sidecarFallbackErr: any) {
-        console.error('[Audio LLM] Sidecar fallback also failed:', sidecarFallbackErr);
         throw new Error(
-          `Audio summarization failed: ${uploadErr.message || 'Gemini Files API error'}. (Taqyeed Gate sidecar error: ${sidecarFallbackErr.message || 'offline'}).`
+          `Audio summarization failed: ${uploadErr.message || 'Gemini error'}.`
         );
       }
     }
@@ -230,7 +725,7 @@ export async function generateTitleFromSummary(
   sidecarUrl?: string
 ): Promise<string> {
   const settings = useAppStore.getState().settings;
-  const activeProvider = provider || settings.llmProvider;
+  const activeProvider = (provider || settings.llmProvider) as LLMProvider;
   const targetSidecarUrl = sidecarUrl || settings.sidecarUrl;
 
   if (activeProvider === 'sidecar') {
@@ -245,48 +740,37 @@ ${summary}
 
 Return ONLY the title text.`;
 
-  // 1. OpenRouter Provider
-  if (activeProvider === 'openrouter' && (apiKey || settings.openRouterApiKey)) {
-    const key = apiKey || settings.openRouterApiKey;
-    try {
-      const sanitizedModel = sanitizeModelName(model, 'openrouter');
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key}`,
-          'HTTP-Referer': 'https://taqyeed.app',
-          'X-Title': 'Taqyeed AI Notes',
-        },
-        body: JSON.stringify({
-          model: sanitizedModel,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const titleText = data.choices?.[0]?.message?.content?.trim();
-        if (titleText) return titleText.replace(/^["']|["']$/g, '');
-      }
-    } catch (err) {
-      console.warn('OpenRouter title generation failed, falling back:', err);
-    }
-  }
+  const effectiveKey = apiKey || getEffectiveApiKey(settings, activeProvider);
 
-  // 2. Gemini Provider
-  const key = (activeProvider === 'gemini' ? apiKey : settings.geminiApiKey) || (process as any).env?.GEMINI_API_KEY;
-  if (key) {
+  // 1. Gemini
+  if (activeProvider === 'gemini') {
+    if (effectiveKey) {
+      try {
+        const sanitizedModel = sanitizeModelName(model, 'gemini');
+        const ai = new GoogleGenAI({ apiKey: effectiveKey });
+        const result = await ai.models.generateContent({
+          model: sanitizedModel,
+          contents: prompt,
+        });
+        const titleText = result.text?.trim();
+        if (titleText) return titleText.replace(/^["']|["']$/g, '');
+      } catch (err) {
+        console.warn('Gemini title generation failed, falling back:', err);
+      }
+    }
+  } else if (effectiveKey) {
+    // 2. Any other provider
     try {
-      const sanitizedModel = sanitizeModelName(model, 'gemini');
-      const ai = new GoogleGenAI({ apiKey: key });
-      const result = await ai.models.generateContent({
-        model: sanitizedModel,
-        contents: prompt,
-      });
-      const titleText = result.text?.trim();
+      const titleText = await callProviderLlm(
+        activeProvider,
+        effectiveKey,
+        model,
+        [{ role: 'user', content: prompt }],
+        settings.customApiBaseUrl
+      );
       if (titleText) return titleText.replace(/^["']|["']$/g, '');
     } catch (err) {
-      console.warn('Gemini title generation failed, falling back to sidecar:', err);
+      console.warn(`${activeProvider} title generation failed:`, err);
     }
   }
 
@@ -295,7 +779,7 @@ Return ONLY the title text.`;
     const sanitizedModel = sanitizeModelName(model, 'sidecar');
     return await generateTitleFromSummarySidecar(summary, targetSidecarUrl, sanitizedModel, language);
   } catch {
-    return `Meeting ${new Date().toLocaleDateString()}`;
+    return `Note ${new Date().toLocaleDateString()}`;
   }
 }
 
@@ -308,7 +792,7 @@ export async function generateSummaryFromText(
   sidecarUrl?: string
 ): Promise<string> {
   const settings = useAppStore.getState().settings;
-  const activeProvider = provider || settings.llmProvider;
+  const activeProvider = (provider || settings.llmProvider) as LLMProvider;
   const targetSidecarUrl = sidecarUrl || settings.sidecarUrl;
 
   if (activeProvider === 'sidecar') {
@@ -328,51 +812,37 @@ TEXT CONTENT:
 ${text}
 `;
 
-  // 1. OpenRouter Provider
-  if (activeProvider === 'openrouter' && (apiKey || settings.openRouterApiKey)) {
-    const key = apiKey || settings.openRouterApiKey;
-    try {
-      const sanitizedModel = sanitizeModelName(model, 'openrouter');
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key}`,
-          'HTTP-Referer': 'https://taqyeed.app',
-          'X-Title': 'Taqyeed AI Notes',
-        },
-        body: JSON.stringify({
+  const effectiveKey = apiKey || getEffectiveApiKey(settings, activeProvider);
+
+  if (activeProvider === 'gemini') {
+    if (effectiveKey) {
+      try {
+        const sanitizedModel = sanitizeModelName(model, 'gemini');
+        const ai = new GoogleGenAI({ apiKey: effectiveKey });
+        const result = await ai.models.generateContent({
           model: sanitizedModel,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const textResult = data.choices?.[0]?.message?.content?.trim();
-        if (textResult) return textResult;
+          contents: prompt,
+        });
+        return result.text?.trim() || '';
+      } catch (err) {
+        console.warn('Gemini text summary failed:', err);
       }
-    } catch (err) {
-      console.warn('OpenRouter text summary failed, falling back:', err);
     }
-  }
-
-  // 2. Gemini Provider
-  const key = (activeProvider === 'gemini' ? apiKey : settings.geminiApiKey) || (process as any).env?.GEMINI_API_KEY;
-  if (key) {
+  } else if (effectiveKey) {
     try {
-      const sanitizedModel = sanitizeModelName(model, 'gemini');
-      const ai = new GoogleGenAI({ apiKey: key });
-      const result = await ai.models.generateContent({
-        model: sanitizedModel,
-        contents: prompt,
-      });
-      return result.text?.trim() || '';
+      return await callProviderLlm(
+        activeProvider,
+        effectiveKey,
+        model,
+        [{ role: 'user', content: prompt }],
+        settings.customApiBaseUrl
+      );
     } catch (err) {
-      console.warn('Text summary generation failed, falling back to sidecar:', err);
+      console.warn(`${activeProvider} text summary failed:`, err);
     }
   }
 
-  // 3. Sidecar Fallback
+  // Fallback to Sidecar
   const sanitizedModel = sanitizeModelName(model, 'sidecar');
   return generateSummaryFromTextSidecar(text, targetSidecarUrl, sanitizedModel, language);
 }
@@ -385,7 +855,7 @@ export async function addTashkeelToArabicText(
   sidecarUrl?: string
 ): Promise<string> {
   const settings = useAppStore.getState().settings;
-  const activeProvider = provider || settings.llmProvider;
+  const activeProvider = (provider || settings.llmProvider) as LLMProvider;
   const targetSidecarUrl = sidecarUrl || settings.sidecarUrl;
 
   if (activeProvider === 'sidecar') {
@@ -393,38 +863,50 @@ export async function addTashkeelToArabicText(
     return addTashkeelToArabicTextSidecar(text, targetSidecarUrl, sanitizedModel);
   }
 
-  const prompt = `You are an expert in Arabic linguistics and text-to-speech optimization.
-Add correct Arabic diacritics (Tashkeel / تشكيل) to the following text. 
-Focus carefully on correct grammar (نحو) and morphology (صرف) so that a text-to-speech engine will pronounce it flawlessly.
-Do not change any words, only add the Tashkeel. DO NOT wrap the output in markdown, quotes, or any extra text. Return ONLY the fully diacritized text.
-You should write the complete expression of صلى الله عليه وسلم not the shortcut symbol.
+  const prompt = `You are an expert in Arabic grammar (النحو والصرف) and classical Arabic literature.
+Task: Add full, accurate Arabic diacritics (التشكيل الكامل / علامات الإعراب) to the provided Arabic text.
+
+STRICT RULES:
+1. Do NOT translate, summarize, or alter any word or word order.
+2. Return ONLY the diacritized Arabic text.
+3. Preserve all punctuation marks, line breaks, and formatting exactly as in the input.
+4. You should write the complete expression of صلى الله عليه وسلم not the shortcut symbol.
 TEXT TO DIACRITIZE:
 ${text}
 `;
 
-  // 1. Gemini Provider
-  const key = (activeProvider === 'gemini' ? apiKey : settings.geminiApiKey) || (process as any).env?.GEMINI_API_KEY;
-  if (key) {
+  const effectiveKey = apiKey || getEffectiveApiKey(settings, activeProvider);
+
+  if (activeProvider === 'gemini') {
+    if (effectiveKey) {
+      try {
+        const sanitizedModel = sanitizeModelName(model, 'gemini');
+        const ai = new GoogleGenAI({ apiKey: effectiveKey });
+        const result = await ai.models.generateContent({
+          model: sanitizedModel,
+          contents: prompt,
+        });
+        return result.text?.trim() || text;
+      } catch (err) {
+        console.warn('Gemini Tashkeel generation failed:', err);
+      }
+    }
+  } else if (effectiveKey) {
     try {
-      const sanitizedModel = sanitizeModelName(model, 'gemini');
-      const ai = new GoogleGenAI({ apiKey: key });
-      const result = await ai.models.generateContent({
-        model: sanitizedModel,
-        contents: prompt,
-      });
-      return result.text?.trim() || text;
+      return await callProviderLlm(
+        activeProvider,
+        effectiveKey,
+        model,
+        [{ role: 'user', content: prompt }],
+        settings.customApiBaseUrl
+      );
     } catch (err) {
-      console.warn('Gemini Tashkeel generation failed, falling back to sidecar:', err);
+      console.warn(`${activeProvider} Tashkeel generation failed:`, err);
     }
   }
 
-  // 2. Sidecar Fallback
-  try {
-    const sanitizedModel = sanitizeModelName(model, 'sidecar');
-    return await addTashkeelToArabicTextSidecar(text, targetSidecarUrl, sanitizedModel);
-  } catch {
-    return text;
-  }
+  const sanitizedModel = sanitizeModelName(model, 'sidecar');
+  return await addTashkeelToArabicTextSidecar(text, targetSidecarUrl, sanitizedModel);
 }
 
 // ─── Streaming AI Content Enhancement ────────────────────────────────────────
@@ -438,7 +920,7 @@ export async function* streamEnhanceContent(
   customPrompt?: string
 ): AsyncGenerator<{ enhanced?: string; done?: boolean }> {
   const settings = useAppStore.getState().settings;
-  const activeProvider = provider || settings.llmProvider;
+  const activeProvider = (provider || settings.llmProvider) as LLMProvider;
   const targetSidecarUrl = sidecarUrl || settings.sidecarUrl;
 
   const tempDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
@@ -455,127 +937,76 @@ export async function* streamEnhanceContent(
       yield* streamEnhanceContentSidecar(htmlContent, targetSidecarUrl, sanitizedModel, language, customPrompt);
       return;
     } catch (sidecarErr: any) {
-      console.warn('Sidecar stream enhancement failed, checking for API key fallback:', sidecarErr);
-      const fallbackGeminiKey = settings.geminiApiKey || (process as any).env?.GEMINI_API_KEY;
-      if (!fallbackGeminiKey && !settings.openRouterApiKey) {
-        throw sidecarErr;
-      }
+      console.warn('Sidecar stream enhancement failed:', sidecarErr);
+      throw sidecarErr;
     }
   }
 
-  // 2. OpenRouter Provider
-  if (activeProvider === 'openrouter' || (!apiKey && settings.openRouterApiKey)) {
-    const openRouterKey = apiKey || settings.openRouterApiKey;
-    if (openRouterKey) {
+  const effectiveKey = apiKey || getEffectiveApiKey(settings, activeProvider);
+
+  // 2. Google Gemini Provider
+  if (activeProvider === 'gemini') {
+    if (effectiveKey) {
       try {
-        const sanitizedModel = sanitizeModelName(model, 'openrouter');
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openRouterKey}`,
-            'HTTP-Referer': 'https://taqyeed.app',
-            'X-Title': 'Taqyeed AI Notes',
-          },
-          body: JSON.stringify({
-            model: sanitizedModel,
-            messages: [
-              {
-                role: 'system',
-                content: customPrompt || `You are an expert scholarly editor and writing enhancer. Improve the provided text while preserving its original meaning, citations, and intent. Return ONLY the enhanced text in clean Markdown or HTML format without conversational intro or outro.`
-              },
-              {
-                role: 'user',
-                content: `TEXT TO PROCESS / ENHANCE:\n"""\n${plainText}\n"""\n\nApply the instructions to the text above and return ONLY the enhanced version.`
-              }
-            ],
-            stream: true,
-          }),
+        const sanitizedModel = sanitizeModelName(model, 'gemini');
+        const ai = new GoogleGenAI({ apiKey: effectiveKey });
+        const prompt = customPrompt
+          ? `${customPrompt}\n\nORIGINAL TEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format without conversational meta-commentary.`
+          : `You are an expert editor and writing enhancer. Improve the following text while preserving its original meaning, citations, and intent.\n\nTEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format.`;
+
+        const result = await ai.models.generateContentStream({
+          model: sanitizedModel,
+          contents: prompt,
         });
 
-        if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`OpenRouter error (${res.status}): ${errText || res.statusText}`);
-        }
-
-        if (res.body) {
-          const reader = res.body.getReader();
-          const decoder = new TextDecoder();
-          let fullText = '';
-          let buffer = '';
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (!trimmed || trimmed.startsWith(':')) continue;
-              if (trimmed === 'data: [DONE]') break;
-              if (trimmed.startsWith('data: ')) {
-                try {
-                  const parsed = JSON.parse(trimmed.slice(6));
-                  const token = parsed.choices?.[0]?.delta?.content || '';
-                  if (token) {
-                    fullText += token;
-                    yield { enhanced: fullText };
-                  }
-                } catch {}
-              }
-            }
+        let fullText = '';
+        for await (const chunk of result) {
+          if (chunk.text) {
+            fullText += chunk.text;
+            yield { enhanced: fullText };
           }
-          yield { enhanced: fullText, done: true };
-          return;
         }
-      } catch (orErr: any) {
-        console.warn('OpenRouter enhancement failed, checking fallback:', orErr);
+
+        yield { enhanced: fullText, done: true };
+        return;
+      } catch (geminiErr: any) {
+        console.warn(`Gemini Enhancement Error (Model: ${model}):`, geminiErr);
         try {
           const sanitizedModel = sanitizeModelName(model, 'sidecar');
           yield* streamEnhanceContentSidecar(htmlContent, targetSidecarUrl, sanitizedModel, language, customPrompt);
           return;
         } catch {
-          throw orErr;
+          throw geminiErr;
         }
       }
     }
   }
 
-  // 3. Google Gemini Provider
-  const geminiKey = apiKey || settings.geminiApiKey || (process as any).env?.GEMINI_API_KEY;
-  if (geminiKey) {
+  // 3. All other providers (OpenRouter, DeepSeek, Qwen, Kimi, Grok, ChatGPT, Anthropic)
+  if (effectiveKey) {
     try {
-      const sanitizedModel = sanitizeModelName(model, 'gemini');
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const prompt = customPrompt
-        ? `${customPrompt}\n\nORIGINAL TEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format without conversational meta-commentary.`
-        : `You are an expert editor and writing enhancer. Improve the following text while preserving its original meaning, citations, and intent.\n\nTEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format.`;
-
-      const result = await ai.models.generateContentStream({
-        model: sanitizedModel,
-        contents: prompt,
-      });
+      const systemInstruction = customPrompt || 'You are an expert scholarly editor and writing enhancer. Improve the provided text while preserving its original meaning, citations, and intent. Return ONLY the enhanced text in clean Markdown format without conversational intro or outro.';
+      const messages: ChatMessage[] = [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: `TEXT TO PROCESS / ENHANCE:\n"""\n${plainText}\n"""\n\nApply the instructions to the text above and return ONLY the enhanced version.` },
+      ];
 
       let fullText = '';
-      for await (const chunk of result) {
-        if (chunk.text) {
-          fullText += chunk.text;
-          yield { enhanced: fullText };
-        }
+      for await (const { token } of streamProviderLlm(activeProvider, effectiveKey, model, messages, settings.customApiBaseUrl)) {
+        fullText += token;
+        yield { enhanced: fullText };
       }
 
       yield { enhanced: fullText, done: true };
       return;
-    } catch (geminiErr: any) {
-      console.warn(`Gemini Enhancement Error (Model: ${model}):`, geminiErr);
+    } catch (err: any) {
+      console.warn(`${activeProvider} stream enhancement failed, falling back to sidecar:`, err);
       try {
         const sanitizedModel = sanitizeModelName(model, 'sidecar');
         yield* streamEnhanceContentSidecar(htmlContent, targetSidecarUrl, sanitizedModel, language, customPrompt);
         return;
       } catch {
-        throw geminiErr;
+        throw err;
       }
     }
   }
@@ -605,40 +1036,13 @@ export async function executeTargetedQuickAction(
 
   const systemInstruction = `${effectivePrompt}\n\nCRITICAL OUTPUT REQUIREMENT:\nReturn ONLY the direct processed output corresponding to the instructions without any introductory remarks, explanations, quotes around the response, conversational filler, or conclusion.`;
 
-  // 1. OpenRouter Provider
-  if (activeProvider === 'openrouter' && settings.openRouterApiKey) {
-    try {
-      const sanitizedModel = sanitizeModelName(model, 'openrouter');
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${settings.openRouterApiKey}`,
-        },
-        body: JSON.stringify({
-          model: sanitizedModel,
-          messages: [
-            { role: 'system', content: systemInstruction },
-            { role: 'user', content: selectedText },
-          ],
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.choices?.[0]?.message?.content || '';
-        if (text.trim()) return text.trim();
-      }
-    } catch (err) {
-      console.warn('OpenRouter quick action failed, falling back to sidecar:', err);
-    }
-  }
+  const effectiveKey = getEffectiveApiKey(settings, activeProvider);
 
-  // 2. Gemini Direct API Provider
-  const geminiKey = settings.geminiApiKey || (process as any).env?.GEMINI_API_KEY;
-  if (activeProvider === 'gemini' && geminiKey) {
+  // 1. Gemini Direct API Provider
+  if (activeProvider === 'gemini' && effectiveKey) {
     try {
       const sanitizedModel = sanitizeModelName(model, 'gemini');
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const ai = new GoogleGenAI({ apiKey: effectiveKey });
       const response = await ai.models.generateContent({
         model: sanitizedModel,
         contents: [
@@ -648,11 +1052,23 @@ export async function executeTargetedQuickAction(
       const text = response.text || '';
       if (text.trim()) return text.trim();
     } catch (err) {
-      console.warn('Gemini direct API failed, falling back to sidecar:', err);
+      console.warn('Gemini direct quick action failed, falling back:', err);
+    }
+  } else if (activeProvider !== 'sidecar' && effectiveKey) {
+    // 2. OpenAI-compatible or Anthropic
+    try {
+      const messages: ChatMessage[] = [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: selectedText },
+      ];
+      const text = await callProviderLlm(activeProvider, effectiveKey, model, messages, settings.customApiBaseUrl);
+      if (text.trim()) return text.trim();
+    } catch (err) {
+      console.warn(`${activeProvider} quick action failed, falling back to sidecar:`, err);
     }
   }
 
-  // 3. Default / Fallback: Taqyeed Gate Sidecar
+  // 3. Fallback: Taqyeed Gate Sidecar
   const sanitizedModel = sanitizeModelName(model, 'sidecar');
   return executeQuickActionSidecar(selectedText, systemInstruction, sidecarUrl, sanitizedModel);
 }
