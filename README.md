@@ -9,7 +9,7 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Web-blue.svg?style=for-the-badge)](#-downloads--releases)
-[![AI Actions](https://img.shields.io/badge/AI%20Prompts-100%25%20Customizable-brightgreen.svg?style=for-the-badge)](#2--fully-customizable-ai-actions-studio)
+[![AI Actions](https://img.shields.io/badge/AI%20ctions-100%25%20Customizable-brightgreen.svg?style=for-the-badge)](#2--fully-customizable-ai-actions-studio)
 [![Local-First](https://img.shields.io/badge/Storage-100%25%20Local--First-purple.svg?style=for-the-badge)](#6--100-local-first--zero-telemetry)
 [![BYOK](https://img.shields.io/badge/BYOK-Google%20Gemini%20(Free)%20%7C%20OpenRouter-orange.svg?style=for-the-badge)](#3--bring-your-own-key-byok--free-gemini-tier)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge)](#-contributing--community)
