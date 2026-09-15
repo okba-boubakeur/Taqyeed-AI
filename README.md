@@ -12,7 +12,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge)](#-contributing--community)
 
 <p align="center">
-  <a href="#-quick-download"><strong>📥 Download APK & Windows EXE</strong></a> •
+  <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.apk"><strong>📱 Download APK (Android)</strong></a> •
+  <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.exe"><strong>💻 Download EXE (Windows)</strong></a> •
   <a href="#-key-features"><strong>✨ Key Features</strong></a> •
   <a href="#-how-it-works"><strong>⚡ How It Works</strong></a> •
   <a href="#-running-locally"><strong>🛠️ Developer Guide</strong></a> •
@@ -36,13 +37,13 @@
 
 ## 📥 Downloads & Releases
 
-Get the latest standalone releases directly:
+Click any link below for **immediate 1-click download** (no GitHub preview required):
 
-| Platform | Format | Package | Status | Checksum (SHA-256) |
+| Platform | Format | Direct Download (1-Click Instant) | Status | Checksum (SHA-256) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Android** | `.apk` (ARM64 / Universal) | [**Download Taqyeed.apk**](release/Taqyeed.apk) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `A74A0F10F3B3E50AA9A6FC3E2A6A4BF5580E0C9B4FE61249C23F6F6066FB298E` |
-| **Windows** | `.exe` (x64 Desktop) | [**Download Taqyeed.exe**](release/Taqyeed.exe) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `D8C22583A5D3863DD8207B103F4045F85A6972430C3A7DF46A73B3A0B88DAE63` |
-| **Web App** | PWA / Browser | [**Run Web Version**](#-running-locally) | ![Ready](https://img.shields.io/badge/Status-Active-brightgreen.svg) | Localhost / PWA |
+| **Android** | `.apk` (ARM64 / Universal) | [**⬇️ Download Taqyeed.apk**](https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.apk) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `A74A0F10F3B3E50AA9A6FC3E2A6A4BF5580E0C9B4FE61249C23F6F6066FB298E` |
+| **Windows** | `.exe` (x64 Desktop) | [**⬇️ Download Taqyeed.exe**](https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.exe) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `D8C22583A5D3863DD8207B103F4045F85A6972430C3A7DF46A73B3A0B88DAE63` |
+| **Web App** | PWA / Browser | [**🌐 Launch Web Version**](#-running-locally) | ![Ready](https://img.shields.io/badge/Status-Active-brightgreen.svg) | Localhost / PWA |
 
 *All releases are compiled directly from source and verified with SHA-256 checksums in [`release/checksums.txt`](release/checksums.txt).*
 
