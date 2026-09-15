@@ -11,7 +11,7 @@ import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code, 
   Heading1, Heading2, Heading3, List, ListOrdered, Quote, 
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, CheckCheck, ListTree,
-  Shrink, Feather, BookOpen, Languages, Table, Globe, Search, ArrowLeft, ArrowRight, Folder,
+  Shrink, Feather, BookOpen, Languages, Table, Globe, Search, ArrowLeft, ArrowRight, ArrowUp, Folder,
   Copy, Scissors, CheckSquare, Image as ImageIcon, Palette, Type, ChevronDown,
   Lightbulb, HelpCircle, Play, Pause
 } from 'lucide-react';
@@ -338,6 +338,22 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
   const [isProcessingActionId, setIsProcessingActionId] = useState<string | null>(null);
   const isProcessingActionIdRef = useRef<string | null>(null);
   const undoTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Personal Prompts Centered Modal State
+  const [showCustomPromptModal, setShowCustomPromptModal] = useState(false);
+  const [customModalMode, setCustomModalMode] = useState<'general' | 'selection'>('general');
+  const [customModalPrompt, setCustomModalPrompt] = useState('');
+  const [savePromptToActionList, setSavePromptToActionList] = useState(false);
+  const customPromptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (showCustomPromptModal) {
+      const timer = setTimeout(() => {
+        customPromptTextareaRef.current?.focus();
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [showCustomPromptModal]);
 
   // Cleanup pending undo timers on unmount
   useEffect(() => {
@@ -1704,6 +1720,67 @@ CRITICAL RULES:
     }
   };
 
+  const handleExecuteCustomPromptModal = async () => {
+    const prompt = customModalPrompt.trim();
+    if (!prompt) return;
+
+    if (customModalMode === 'general') {
+      if (savePromptToActionList) {
+        const name = prompt.length > 25 ? prompt.slice(0, 25) + '…' : prompt;
+        useAppStore.getState().addGeneralAction({
+          name,
+          nameAr: name,
+          prompt,
+          icon: 'Sparkles',
+          enabled: true,
+          isCustom: true,
+        });
+        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات العامة' : 'Saved to General Actions list', 'success');
+      }
+
+      setCustomModalPrompt('');
+      setSavePromptToActionList(false);
+      setShowCustomPromptModal(false);
+      handleEnhance(prompt);
+    } else {
+      const currentRange = selectedRange || pendingSelectionRef.current;
+      if (!currentRange || !currentRange.text.trim()) {
+        showToast(isRtl ? 'يرجى تحديد نص أولاً' : 'Please select text first', 'warning');
+        setShowCustomPromptModal(false);
+        return;
+      }
+
+      const name = prompt.length > 25 ? prompt.slice(0, 25) + '…' : prompt;
+      const actionId = `custom_prompt_${Date.now()}`;
+      const customActionItem: QuickActionItem = {
+        id: actionId,
+        name,
+        nameAr: name,
+        prompt,
+        icon: 'Sparkles',
+        enabled: true,
+        isCustom: true,
+      };
+
+      if (savePromptToActionList) {
+        useAppStore.getState().addQuickAction({
+          name,
+          nameAr: name,
+          prompt,
+          icon: 'Sparkles',
+          enabled: true,
+          isCustom: true,
+        });
+        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات السريعة' : 'Saved to Quick Actions list', 'success');
+      }
+
+      setCustomModalPrompt('');
+      setSavePromptToActionList(false);
+      setShowCustomPromptModal(false);
+      handleExecuteQuickAction(customActionItem);
+    }
+  };
+
   // Listen for enhance event from FloatingRecorder wand button
   useEffect(() => {
     const handler = () => handleEnhance();
@@ -2795,11 +2872,32 @@ CRITICAL RULES:
                   exit={{ opacity: 0, scale: 0.9, y: 8 }}
                   transition={{ duration: 0.16, ease: 'easeOut' }}
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute bottom-full right-0 mb-3 w-64 md:w-72 bg-card border border-border shadow-2xl rounded-2xl p-2 z-20 select-none overflow-hidden"
+                  className="absolute bottom-full right-0 mb-3 w-72 sm:w-80 max-h-[82vh] flex flex-col bg-card border border-border shadow-2xl rounded-2xl p-2.5 z-20 select-none overflow-hidden"
                   dir={isRtl ? 'rtl' : 'ltr'}
                 >
-                  {/* Menu Items */}
-                  <div className="space-y-1">
+                  {/* Menu Items List */}
+                  <div className="space-y-1 overflow-y-auto flex-1 max-h-72 pr-0.5">
+                    {/* Custom Option: identical UI to other options in the list */}
+                    <div
+                      className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-muted/80 transition-all group cursor-pointer"
+                      onClick={() => {
+                        setShowAiMenu(false);
+                        setCustomModalMode('general');
+                        setCustomModalPrompt('');
+                        setSavePromptToActionList(false);
+                        setShowCustomPromptModal(true);
+                      }}
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 text-foreground">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0 text-left rtl:text-right">
+                        <div className="text-xs font-semibold text-foreground transition-colors truncate">
+                          <span>{isRtl ? 'طلب مخصص...' : 'Custom Prompt...'}</span>
+                        </div>
+                      </div>
+                    </div>
+
                     {(() => {
                       const enabledActions = (settings.generalActions || defaultGeneralActions).filter(action => action.enabled !== false);
                       if (enabledActions.length === 0) {
@@ -2813,28 +2911,41 @@ CRITICAL RULES:
                         const Icon = getActionIcon(action.icon);
                         const isSelected = settings.selectedAiOption === action.id;
                         return (
-                          <button
+                          <div
                             key={action.id}
-                            type="button"
+                            className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-muted/80 transition-all group cursor-pointer"
                             onClick={() => {
                               setShowAiMenu(false);
                               useAppStore.getState().updateSettings({ selectedAiOption: action.id });
                               handleEnhance(action.prompt);
                             }}
-                            className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/80 transition-all text-left rtl:text-right group cursor-pointer"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-transparent flex items-center justify-center shrink-0 text-foreground">
+                            <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 text-foreground">
                               <Icon className="w-4 h-4" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-bold text-foreground transition-colors truncate flex items-center justify-between">
+                            <div className="flex-1 min-w-0 text-left rtl:text-right">
+                              <div className="text-xs font-semibold text-foreground transition-colors truncate flex items-center justify-between">
                                 <span>{isRtl ? (action.nameAr || action.name) : action.name}</span>
                                 {isSelected && (
-                                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                                  <Check className="w-3.5 h-3.5 text-foreground shrink-0" />
                                 )}
                               </div>
                             </div>
-                          </button>
+                            {action.isCustom && (
+                              <button
+                                type="button"
+                                title={isRtl ? 'حذف الإجراء' : 'Delete action'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  useAppStore.getState().removeGeneralAction(action.id);
+                                  showToast(isRtl ? 'تم حذف الإجراء' : 'Action deleted', 'success');
+                                }}
+                                className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         );
                       });
                     })()}
@@ -3075,6 +3186,29 @@ CRITICAL RULES:
 
                 {/* AI Quick Actions */}
                 <div className="flex flex-col divide-y divide-border/20 pt-1">
+                  {/* Custom Option: identical UI to other options in the list */}
+                  <div
+                    className="w-full text-left rtl:text-right px-3 py-2.5 transition-colors group flex items-center justify-between gap-3 hover:bg-muted active:bg-muted/80 cursor-pointer"
+                    onClick={() => {
+                      const currentRange = selectedRange || pendingSelectionRef.current;
+                      if (!currentRange || !currentRange.text.trim()) return;
+                      pendingSelectionRef.current = currentRange;
+                      setSelectedRange(currentRange);
+                      setShowContextMenu(false);
+                      setShowSelectionBubble(false);
+                      setCustomModalMode('selection');
+                      setCustomModalPrompt('');
+                      setSavePromptToActionList(false);
+                      setShowCustomPromptModal(true);
+                    }}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Sparkles className="w-4 h-4 text-foreground/80 shrink-0" />
+                      <span className="text-xs font-semibold text-foreground truncate">
+                        {isRtl ? 'طلب مخصص...' : 'Custom Prompt...'}
+                      </span>
+                    </div>
+                  </div>
                   {(settings.quickActions || defaultQuickActions)
                     .filter(a => a.enabled !== false)
                     .map((action) => {
@@ -3083,39 +3217,141 @@ CRITICAL RULES:
                       const isTranslate = action.prompt.includes('{{TARGET_LANGUAGE}}');
 
                       return (
-                        <button
+                        <div
                           key={action.id}
-                          type="button"
-                          disabled={isProcessingActionId !== null}
-                          onClick={() => handleExecuteQuickAction(action)}
-                          className={`w-full text-left rtl:text-right px-3 py-3 transition-colors group cursor-pointer flex items-center justify-between gap-3 hover:bg-muted active:bg-muted/80 ${
+                          className={`w-full text-left rtl:text-right px-3 py-2.5 transition-colors group flex items-center justify-between gap-3 hover:bg-muted active:bg-muted/80 ${
                             isProcessing ? 'bg-muted/50' : ''
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105 transition-all">
-                            {isProcessing ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-primary group-hover:text-primary-foreground" />
-                            ) : (
-                              <IconComponent className="w-4 h-4" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                              {isRtl ? (action.nameAr || action.name) : action.name}
+                          <button
+                            type="button"
+                            disabled={isProcessingActionId !== null}
+                            onClick={() => handleExecuteQuickAction(action)}
+                            className="flex-1 min-w-0 flex items-center justify-between gap-3 cursor-pointer text-left rtl:text-right"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 group-hover:scale-105 transition-all">
+                                {isProcessing ? (
+                                  <Loader2 className="w-4 h-4 animate-spin text-foreground" />
+                                ) : (
+                                  <IconComponent className="w-4 h-4" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-semibold text-foreground transition-colors truncate">
+                                  {isRtl ? (action.nameAr || action.name) : action.name}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {isTranslate && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary shrink-0">
-                            {isRtl ? 'لغات العالم' : 'All Languages'}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                            {isTranslate && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                {isRtl ? 'لغات العالم' : 'All Languages'}
+                              </span>
+                            )}
+                          </button>
+
+                          {action.isCustom && (
+                            <button
+                              type="button"
+                              title={isRtl ? 'حذف الإجراء' : 'Delete action'}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                useAppStore.getState().removeQuickAction(action.id);
+                                showToast(isRtl ? 'تم حذف الإجراء' : 'Action deleted', 'success');
+                              }}
+                              className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Center Screen Pop Animation for Prompt Input (No container, no header) ── */}
+      <AnimatePresence>
+        {showCustomPromptModal && (
+          <div
+            className="fixed inset-0 z-[130] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 cursor-default"
+            onClick={() => setShowCustomPromptModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 16 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-lg rounded-[24px] border border-border bg-card shadow-2xl focus-within:border-ring/50 focus-within:ring-1 focus-within:ring-ring/20 p-3 pt-3.5 pb-2.5 flex flex-col justify-between select-none"
+              style={{ minHeight: 124 }}
+            >
+              <style dangerouslySetInnerHTML={{ __html: `
+                .prompt-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
+                .prompt-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .prompt-scrollbar::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+                .prompt-scrollbar:hover::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); }
+              `}} />
+
+              {/* Textarea */}
+              <textarea
+                ref={customPromptTextareaRef}
+                value={customModalPrompt}
+                onChange={(e) => setCustomModalPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (customModalPrompt.trim() && !isEnhancing && isProcessingActionId === null) {
+                      handleExecuteCustomPromptModal();
+                    }
+                  }
+                  if (e.key === 'Escape') {
+                    setShowCustomPromptModal(false);
+                  }
+                }}
+                placeholder={
+                  customModalMode === 'selection'
+                    ? (isRtl ? 'اطلب أي شيء للنص المحدد (اضغط Enter للإرسال)...' : 'Ask anything for selection (Press Enter to send)...')
+                    : (isRtl ? 'اطلب أي شيء للملاحظة (اضغط Enter للإرسال)...' : 'Ask anything for this note (Press Enter to send)...')
+                }
+                dir={isRtl ? 'rtl' : 'ltr'}
+                rows={3}
+                className="prompt-scrollbar w-full resize-none bg-transparent px-2 pt-0.5 pb-2 text-sm leading-[22px] text-foreground outline-none placeholder:font-medium placeholder:text-muted-foreground/70 cursor-text min-h-[64px] max-h-[160px] overflow-y-auto"
+              />
+
+              {/* Bottom row: Save Action on left, Send button on right */}
+              <div className="flex items-center justify-between pt-1 px-1" dir="ltr">
+                {/* Left side: Save Action */}
+                <label
+                  className="flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
+                  dir={isRtl ? 'rtl' : 'ltr'}
+                >
+                  <input
+                    type="checkbox"
+                    checked={savePromptToActionList}
+                    onChange={(e) => setSavePromptToActionList(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-border text-foreground accent-foreground cursor-pointer"
+                  />
+                  <span>{isRtl ? 'حفظ في قائمة الإجراءات' : 'Save in actions list'}</span>
+                </label>
+
+                {/* Right side: Send button */}
+                <button
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onClick={handleExecuteCustomPromptModal}
+                  disabled={!customModalPrompt.trim() || isEnhancing || isProcessingActionId !== null}
+                  aria-label={isRtl ? 'إرسال' : 'Send prompt'}
+                  style={{ borderRadius: 9999 }}
+                  className="flex h-8 w-8 items-center justify-center bg-foreground text-background transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-30 outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0"
+                >
+                  <ArrowUp className="w-4 h-4 stroke-[2.2]" />
+                </button>
               </div>
             </motion.div>
           </div>
