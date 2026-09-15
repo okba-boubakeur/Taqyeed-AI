@@ -1,23 +1,26 @@
 <div align="center">
 
+<img src="public/logo.svg" alt="Taqyeed AI Logo" width="105" height="105" />
+
 # Taqyeed AI (تقييد)
+
 ### Bind Your Knowledge — Smart Lecture Recording, Note-Taking & Custom AI Actions
-#### قَيِّدْ عِلْمَكَ — تدوين ذكي وتسجيل للدروس والمحاضرات مع أدوات ذكاء اصطناعي مخصصة لطلبة العلم — مفتوح المصدر
+#### قَيِّدْ عِلْمَكَ — تدوين ذكي وتسجيل للدروس والمحاضرات مع أدوات ذكاء اصطناعي مخصصة — مفتوح المصدر
 
 [![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Web-blue.svg?style=for-the-badge)](#-downloads--releases)
-[![AI Action Studio](https://img.shields.io/badge/AI%20Actions-100%25%20Customizable-brightgreen.svg?style=for-the-badge)](#-3-customizable-academic--sharia-ai-actions-engine-prompt-studio)
-[![Local-First](https://img.shields.io/badge/Architecture-100%25%20Local--First-purple.svg?style=for-the-badge)](#-privacy--local-first-architecture)
-[![AI Providers](https://img.shields.io/badge/AI%20Providers-Google%20Gemini%20%7C%20OpenRouter-orange.svg?style=for-the-badge)](#-flexible-multi-llm-engine)
+[![AI Actions](https://img.shields.io/badge/AI%20Prompts-100%25%20Customizable-brightgreen.svg?style=for-the-badge)](#2--fully-customizable-ai-actions-studio)
+[![Local-First](https://img.shields.io/badge/Storage-100%25%20Local--First-purple.svg?style=for-the-badge)](#6--100-local-first--zero-telemetry)
+[![BYOK](https://img.shields.io/badge/BYOK-Google%20Gemini%20(Free)%20%7C%20OpenRouter-orange.svg?style=for-the-badge)](#3--bring-your-own-key-byok--free-gemini-tier)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge)](#-contributing--community)
 
 <p align="center">
   <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.apk"><strong>📱 Download APK (Android)</strong></a> •
   <a href="https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.exe"><strong>💻 Download EXE (Windows)</strong></a> •
-  <a href="#-key-features"><strong>✨ Key Features</strong></a> •
-  <a href="#-how-it-works"><strong>⚡ How It Works</strong></a> •
-  <a href="#-running-locally"><strong>🛠️ Developer Guide</strong></a> •
-  <a href="#-frequently-asked-questions-aeo"><strong>❓ FAQ</strong></a> •
+  <a href="#-why-taqyeed-vs-other-apps"><strong>⚖️ Compare vs Competitors</strong></a> •
+  <a href="#-core-features"><strong>⚡ Core Features</strong></a> •
+  <a href="#-quick-start"><strong>🛠️ Quick Start</strong></a> •
+  <a href="#-faq"><strong>❓ FAQ</strong></a> •
   <a href="#-contributing--community"><strong>🤝 Contributing</strong></a>
 </p>
 
@@ -25,186 +28,161 @@
 
 ---
 
-> ### 💡 What is Taqyeed AI? (قَيِّدْ عِلْمَكَ)
-> **Taqyeed AI (تقييد)** is a free, local-first, privacy-respecting AI note-taking and audio lecture companion purpose-built for students of Islamic Sciences (*Talabat al-’Ilm ash-Shar’i*) and academic researchers around the globe. Inspired by the classical Arabic adage **«قَيِّدُوا العِلْمَ بِالكِتَابِ»** (*"Bind knowledge by writing it down"*), Taqyeed AI bridges centuries-old scholarly rigor with state-of-the-art Generative AI.
-> 
-> ⚡ **The Ultimate Superpower: Fully Customizable AI Actions & Prompt Studio**
-> At the core of Taqyeed AI lies its standout capability: **total freedom to create, edit, customize, and orchestrate your own AI actions**. Students are never restricted to hardcoded prompts. Build bespoke scholarly tools from scratch — including deep Hadith Takhrij and grading according to specific classical authorities, Fiqh rulings extraction, grammatical analysis (*I'rab*), terminology clarification, or custom revision flashcards. Configure dual-context actions that run seamlessly on **highlighted text selections** (smart bubble menu) or across the **entire lecture note** (floating assistant).
-> 
-> Furthermore, Taqyeed AI lets you **write notes while actively recording lectures in real-time**, employs smart AI de-duplication so your personal writings are never overwritten, and exports publication-grade academic PDFs with **customizable warm paper backgrounds, textures, and Arabic-native RTL formatting**.
+### What is Taqyeed AI?
+
+During an intensive lecture, seminar, or study circle, you are constantly forced to choose: **do you listen attentively, or do you scramble to write notes before the speaker moves on?**
+
+Existing voice recorders give you hours of audio you never have time to re-listen to. Typical AI transcription tools produce robotic, repetitive transcripts that ignore your personal observations.
+
+**Taqyeed AI (تقييد)** solves this with a practical, local-first workflow:
+1. **Record in the background** while you write down your own spontaneous thoughts, references, and questions inside the note editor.
+2. **When the lecture ends**, AI fuses your written notes with the audio transcript into an organized study document. It uses your writing as the anchor, strictly avoids repeating what you already noted, and seamlessly injects the spoken proofs, citations, and missing context.
+3. **Customize your own AI toolset**—from Hadith Takhrij and Fiqh analysis to custom exam-prep flashcards—using your own free Google Gemini API key or OpenRouter.
+
+---
+
+## ⚖️ Why Taqyeed vs Other Apps?
+
+Most AI speech-to-note apps (like Granola, AudioPen, or Otter) charge steep monthly subscriptions, store your audio on private cloud servers, and lock you into fixed, uneditable summary formats. Taqyeed is built on an entirely different philosophy:
+
+| Capability | **Taqyeed AI** | **Granola** | **AudioPen** | **Otter.ai** | **Notion AI** | **Obsidian** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Pricing & License** | **100% Free & Open Source (MIT)** | Freemium ($14–$35/mo) | Paid ($75–$99/yr) | Paid ($17–$30/mo) | $10/user/mo add-on | Free Core |
+| **Simultaneous Record & Write** | **Yes (Live in-editor sync)** | Desktop only | ❌ Voice only | ❌ Transcript only | ❌ Notes only | ❌ Plugin required |
+| **Smart Note De-Duplication** | **Yes (Preserves user text)** | Yes | ❌ | ❌ | ❌ | ❌ |
+| **Long Audio Support (1–3h+)** | **Yes (Full lectures/classes)** | Meetings only | Short rambles only | Meetings only | ❌ Text only | ❌ Plugin required |
+| **Custom AI Actions Studio** | **Yes (Create & edit prompts)** | Limited | Style presets only | ❌ | Fixed prompts | ❌ Community plugins |
+| **AI Model Freedom (BYOK)** | **Gemini (Free tier) + OpenRouter** | Closed proprietary | Closed proprietary | Closed proprietary | Closed proprietary | ❌ Community plugins |
+| **Zero Ongoing AI Cost** | **Yes (Google AI Studio free tier)** | Paid subscription | Paid subscription | 300 mins/mo limit | Paid add-on | Depends on provider |
+| **Specialized Islamic/Hadith Tools** | **Yes (Built-in Takhrij & Fiqh)** | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Academic PDF Export** | **Yes (Warm paper & auto-contrast)**| ❌ Plain export | ❌ Plain text | ❌ Plain export | Basic export | Requires CSS snippets |
+| **Privacy & Storage** | **100% Local-First (IndexedDB)** | Cloud servers | Cloud servers | Cloud servers | Cloud servers | Local markdown |
+
+---
+
+## ⚡ Core Features
+
+### 1. 🎙️ Simultaneous Record & Write (Never Miss a Word)
+- **Take notes while recording live audio:** No need to switch between an audio recorder and a notes app. An embedded waveform bar tracks elapsed time and lets you pause or resume at will.
+- **Smart AI De-Duplication:** When generating notes from audio, Taqyeed treats your written text as primary ground truth. It avoids repeating points you already recorded and specifically extracts only the supplementary explanations, quotes, and examples from the audio.
+
+### 2. ⚡ Fully Customizable AI Actions Studio
+- **You are not locked into hardcoded prompts:** Taqyeed includes a visual Action Manager where you can build brand new custom AI actions from scratch, complete with custom system prompts, Lucide icons, and bilingual titles.
+- **Edit any existing prompt:** Refine the built-in Hadith Takhrij prompt to target specific classical collections (*Kutub as-Sittah*, *Musnad Ahmad*), tune Fiqh prompts to your preferred Madhhab, or build tailored prompts for law, medicine, or linguistics.
+- **Dual-Context Workflow:**
+  - **Selection Quick Actions (Bubble Menu):** Highlight any sentence or paragraph in your note for instant contextual actions (*Grammar Parsing / I'rab*, *Hadith Source Lookup*, *Translate*, *Summarize Selection*).
+  - **General Note Actions (Floating Assistant):** Run high-level transformations on the entire document (*Generate Comprehensive Study Guide*, *Extract Key Juristic Rulings*, *Produce Revision Flashcard Questions*).
+- **1-Click Management:** Toggle actions on or off to keep your workspace uncluttered, reorder your workflow, or restore factory defaults anytime.
+
+### 3. 🔑 Bring Your Own Key (BYOK) & Free Gemini Tier
+- **Google Gemini 2.5 Flash / Pro (Default):** Ultra-fast comprehension of multi-speaker lectures, classical Arabic (*Fusha*), and complex terminology.
+- **Zero Cost with Google AI Studio:** Includes an inline guide explaining how to obtain a free personal Gemini API key in 4 steps with **zero credit card required**.
+- **OpenRouter (100+ Models):** Switch to Claude 3.5 Sonnet, DeepSeek-V3, Llama 3.3 70B, Qwen, or Mistral whenever you want.
+- **Key Testing & Cross-Validation:** Test key validity with 1 click. Built-in format checking alerts you if you accidentally enter a Gemini key into OpenRouter or vice versa.
+
+### 4. 📜 Built for Islamic Scholarship & Academic Rigor
+- **Hadith Takhrij & Source Citation ("التخريج والمراجع والمصادر"):** Isolate spoken or written Hadith citations, extract narrator chains (*Isnad*), and format references according to classical scholarly standards.
+- **Fiqh & Grammar Polish:** Refine technical terminology, verify Tashkeel on critical verses, and organize legal proofs (*Adillah*) cleanly.
+- **Universal Utility:** Easily adapted for university lectures, legal case briefs, medical pharmacology reviews, or research symposiums.
+
+### 5. 📄 Publication-Ready PDF Export with Warm Paper Palettes
+- **No More Sterile White Pages:** Export documents rendered on authentic physical-paper color palettes:
+  - *Scholar's Light*: Warm Peach (`#ffedd5`), Soft Amber (`#fed7aa`), Light Gray (`#f5f5f5`), Paper White (`#fafafa`), Warm Yellow (`#fef3c7`).
+  - *Nocturnal Dark*: Deep Slate (`#171717`), Warm Stone (`#1c1917`), Neutral Dark (`#262626`), Midnight Black (`#0c0a09`), Zinc (`#18181b`).
+- **Dynamic Luminance & Contrast Inversion:** The PDF engine detects paper luminance (`isDarkPaper`) and automatically switches body text to crisp ivory or deep charcoal, keeping headers, divider rules, and margins balanced.
+- **Dedicated References Section:** The references section (*والتخريج والمراجع والمصادر*) is cleanly separated by a fine divider line and set in an unbolded scholarly font for an authentic manuscript look.
+- **Bilingual RTL/LTR Typesetting:** Tajawal typography with zero punctuation reversal or bullet point misalignment.
+
+### 6. 🔒 100% Local-First & Zero Telemetry
+- **IndexedDB via Dexie.js:** Notes, recordings, folders, and prompt configurations stay on your physical device.
+- **No Tracking, No Cloud Lock-In:** Taqyeed sends data directly to your configured AI provider (Google or OpenRouter) using your private API key. Nothing touches any middleman server.
 
 ---
 
 ## 📥 Downloads & Releases
 
-Click any link below for **immediate 1-click download** (no GitHub preview required):
+Direct 1-click standalone downloads (no GitHub preview page):
 
-| Platform | Format | Direct Download (1-Click Instant) | Status | Checksum (SHA-256) |
+| Platform | Format | Direct Download | Status | Checksum (SHA-256) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Android** | `.apk` (ARM64 / Universal) | [**⬇️ Download Taqyeed.apk**](https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.apk) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `A74A0F10F3B3E50AA9A6FC3E2A6A4BF5580E0C9B4FE61249C23F6F6066FB298E` |
 | **Windows** | `.exe` (x64 Desktop) | [**⬇️ Download Taqyeed.exe**](https://github.com/okba-boubakeur/Taqyeed-AI/raw/main/release/Taqyeed.exe) | ![Ready](https://img.shields.io/badge/Status-Ready-brightgreen.svg) | `D8C22583A5D3863DD8207B103F4045F85A6972430C3A7DF46A73B3A0B88DAE63` |
-| **Web App** | PWA / Browser | [**🌐 Launch Web Version**](#-running-locally) | ![Ready](https://img.shields.io/badge/Status-Active-brightgreen.svg) | Localhost / PWA |
+| **Web App** | PWA / Browser | [**🌐 Launch Web Version**](#-quick-start) | ![Ready](https://img.shields.io/badge/Status-Active-brightgreen.svg) | Localhost / PWA |
 
-*All releases are compiled directly from source and verified with SHA-256 checksums in [`release/checksums.txt`](release/checksums.txt).*
-
----
-
-## ✨ Key Features & Capabilities
-
-### 🎙️ 1. Simultaneous Live Recording & Note-Taking
-* **Write while recording:** Never choose between listening and writing. Start recording a lecture, select *"Continue & Write"*, and take live notes directly inside the note editor.
-* **In-Note Waveform & Live Timer:** An embedded live recording card pulses at the top of the editor with an animated 18-bar waveform, live timer, pause/resume, and instant save controls.
-* **Smart AI De-Duplication:** When converting your audio lecture into comprehensive notes, Taqyeed AI uses your written notes as the **primary foundation**. It strictly avoids repeating points you already wrote, and seamlessly injects only the missing nuances, Quranic verses, and Hadith references from the audio.
-
-### 🧠 2. Flexible Multi-LLM Engine (Google Gemini & OpenRouter)
-* **Default Google Gemini (Gemini 2.5 Flash / Pro):** Ultra-fast, highly accurate comprehension of Arabic, Islamic terminology, classical texts, and multi-speaker audio recordings.
-* **Built-in Free API Key Guide:** Features an inline guide with an `(i)` info button explaining how to obtain a 100% free Google AI Studio API key in 4 simple steps without entering a credit card.
-* **OpenRouter Support (100+ Models):** Access Claude 3.5 Sonnet, DeepSeek-V3, Llama 3.3 70B, Mistral, Qwen, and more using Bring-Your-Own-Key (BYOK).
-* **Real-Time Key Testing & Smart Cross-Validation:** Instant "Test" button verifies key validity before you use it. Includes automatic detection preventing users from mistakenly using a Gemini key (`AIzaSy...`) on OpenRouter or vice versa, with a 1-click provider switch banner.
-
-### 📜 3. Customizable Academic & Sharia AI Actions Engine (Prompt Studio)
-* **Build & Customize Your Own AI Actions:** Students are never locked into rigid presets. Create completely new AI actions from scratch with custom instructions, Lucide icons, and bilingual Arabic/English titles tailored to your exact discipline (Hadith critique, Usul al-Fiqh, Arabic grammar, Medical terminology, Comparative Law).
-* **Edit Any Prompt & Criteria:** Modify instructions for Hadith Takhrij (target specific classical collections like *Kutub as-Sittah* or *Musnad Ahmad*), dictate preferred juristic Madhhab conventions, or customize academic summary structures.
-* **Dual-Context Action Workflows:**
-  * **Selection Quick Actions (Smart Bubble Menu):** Highlight any text in your note to instantly trigger contextual actions (*Grammar Parsing / I'rab*, *Hadith Takhrij*, *Vocabulary Explainer*, *Translate*, *Summarize Highlight*).
-  * **General Note Actions (Floating AI Assistant):** Execute comprehensive analysis on the entire lecture note (*Generate Complete Study Guide*, *Extract Key Fiqh Rulings*, *Generate Self-Testing Flashcard Questions*, *Format Classical Citations*).
-* **Visual Action Manager:** Easily enable or disable actions, delete unwanted tools, reorder your workflow, or restore factory defaults with a single click.
-
-### 📄 4. Publication-Ready Academic PDF Export with Custom Paper Backgrounds
-* **Custom Paper Palettes (Not Sterile White):** Exported PDFs automatically render on your chosen **authentic paper color palette**:
-  * *Scholar's Light Palettes:* **Warm Peach** (`#ffedd5`), **Soft Amber** (`#fed7aa`), **Light Gray** (`#f5f5f5`), **Paper White** (`#fafafa`), **Warm Yellow** (`#fef3c7`).
-  * *Nocturnal Dark Palettes:* **Deep Slate** (`#171717`), **Warm Stone** (`#1c1917`), **Neutral Dark** (`#262626`), **Midnight Black** (`#0c0a09`), **Zinc** (`#18181b`).
-* **Custom Background Patterns & Textures:** Apply subtle vintage paper textures, geometric patterns, or user-uploaded background images with canvas pre-fill to give your exported PDFs the feel of authentic historical manuscripts or fine-bound academic books.
-* **Dynamic Luminance & Text Contrast Inversion:** The PDF engine automatically analyzes the paper background luminance (`isDarkPaper`). Dark paper documents seamlessly switch to crisp ivory/white text, while light paper uses deep charcoal/black, with borders and divider lines balanced dynamically.
-* **Dedicated References Section Styling:** The references section (*والتخريج والمراجع والمصادر*) is automatically partitioned by an elegant divider line, styled in an unbolded scholarly font, and softened with subtle contrast for genuine academic publication aesthetics.
-* **Bilingual RTL/LTR Architecture & Typesetting:** Native Arabic typesetting using the Tajawal font family via `pdfmake-rtl`, with zero punctuation reversals, perfect table borders, and crisp bullet points.
-
-### 🎨 5. Eye-Friendly Study Aesthetics & Monochrome Design
-* **Strict Monochrome Toolbar Icons:** Clean, distraction-free monochrome action icons across navigation bars, floating buttons, and menus for a unified feel in both light and dark modes.
-* **Curated Visual Themes:** Synchronized paper color schemes between the interactive live editor and exported PDFs for an immersive, eye-friendly reading experience.
-
-### 🔒 6. Privacy & 100% Local-First Architecture
-* **IndexedDB via Dexie.js:** Your notes, voice recordings, folders, and settings remain stored securely on your device.
-* **No Telemetry, No Cloud Lock-In:** Taqyeed AI never transmits your personal data, audio files, or study notes to third-party servers. Audio processing requests are sent directly to your chosen LLM provider (Google Gemini or OpenRouter) using your private API key.
+*All release binaries are verified with SHA-256 checksums in [`release/checksums.txt`](release/checksums.txt).*
 
 ---
 
-## 📊 Feature Comparison
+## 🛠️ Quick Start
 
-| Feature | **Taqyeed AI (تقييد)** | Obsidian | Notion | AudioPen | Otter.ai |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Open Source (MIT License)** | **Yes (100% Free)** | No | No | No | No |
-| **Simultaneous Record & Type** | **Yes** | Plugin only | No | No | No |
-| **Smart Note De-duplication** | **Yes** | No | No | No | No |
-| **Islamic Sciences & Takhrij Engine** | **Yes** | No | No | No | No |
-| **Custom AI Actions & Prompt Studio** | **Yes (Built-in Manager)** | Plugin only | No | No | No |
-| **Custom PDF Paper Backgrounds** | **Yes (10 Palettes & Textures)**| CSS only | No | No | No |
-| **Arabic RTL-First Design** | **Native** | Plugin only | Limited | Limited | Limited |
-| **Academic References PDF Styling** | **Yes** | Requires CSS | No | No | No |
-| **Multi-LLM BYOK (Gemini / OpenRouter)**| **Yes** | Plugin only | No | No | No |
-| **100% Local-First Storage** | **Yes** | Yes | No | No | No |
-| **No Subscription Required** | **Yes (Free Forever)** | Paid Sync | Subscription | Subscription | Subscription |
+Taqyeed AI is built with **React 19, TypeScript, Vite, Tailwind CSS v4, Capacitor (Android), and Tauri (Desktop Windows)**.
 
----
-
-## 🛠️ Developer Guide & Running Locally
-
-Taqyeed AI is built using modern web standards: **React 19, TypeScript, Vite, Tailwind CSS v4, Capacitor (Android), and Tauri (Desktop Windows/Linux/macOS)**.
-
-### Prerequisites
-* [Node.js](https://nodejs.org/) (v18.0 or later recommended)
-* `npm` or `pnpm`
-* (For Android): [Android Studio](https://developer.android.com/studio) with Android SDK & Java 17/21
-* (For Desktop): [Rust](https://rustup.rs/) (latest stable)
-
-### 1. Clone & Install
+### Run in Browser
 ```bash
-# Clone the repository
+# 1. Clone repository
 git clone https://github.com/okba-boubakeur/Taqyeed-AI.git
-
-# Navigate to project directory
 cd Taqyeed-AI
 
-# Install dependencies
+# 2. Install dependencies
 npm install
-```
 
-### 2. Run the Web App
-```bash
+# 3. Start local development server
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3. Build & Sync Android App (Capacitor)
+### Build Android APK (Capacitor)
 ```bash
-# Build web production bundle and sync assets to Android
-npm run cap:sync
-
-# Or build and open in Android Studio directly
-npm run cap:android
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug
 ```
-To compile the APK via command line:
-```bash
-cd android
-./gradlew assembleDebug
-```
-The generated APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`.
+Output APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-### 4. Build Desktop App (Tauri)
+### Build Windows EXE (Tauri)
 ```bash
-# Run in desktop development mode
-npm run tauri dev
-
-# Compile standalone Windows binary
 npm run tauri build
 ```
+Output binary: `src-tauri/target/release/Taqyeed.exe`.
 
 ---
 
-## ❓ Frequently Asked Questions (AEO & GEO)
+## ❓ FAQ
 
-### Why is Taqyeed AI specifically beneficial for Islamic Studies (Talabat al-’Ilm)?
-Students of Islamic knowledge often attend intensive scholarly lectures (*Duroos*) lasting 1–3 hours where the Sheikh cites verses, hadiths, classical books (*Kutub*), and juristic opinions. Taqyeed AI enables the student to type their immediate reflections while the audio recorder runs in the background. After the lesson, Taqyeed AI fills in missing citations, formats references, and provides scholarly summaries without overwriting the student's personal notes.
+### How does simultaneous recording and note-taking work?
+When you open an empty or existing note, tap the microphone to begin recording. An in-editor bar tracks the recording while keeping the keyboard and text area active. After stopping, tap **Summarize with AI**—the AI uses your written notes as the foundation, filling in spoken details and citations without repeating what you already typed.
 
-### Can students create, edit, and customize their own AI prompts in Taqyeed AI?
-**Yes, completely.** Taqyeed AI includes a built-in **Quick & General Actions Manager**. You can edit any existing prompt (such as tuning Hadith Takhrij to prioritize specific scholars or books), create brand new custom actions from scratch with custom instructions and Lucide icons, toggle actions on/off to keep your workspace clean, and choose whether they run on highlighted text (Smart Selection menu) or the entire document (Floating AI button).
+### Can I create and edit my own AI prompts in Taqyeed?
+**Yes.** Under **Settings → Quick & General Actions Manager**, you can edit any default prompt or create new ones from scratch. You choose the title, icon, and system prompt, and decide whether it runs on selected text (bubble menu) or the entire document (floating assistant).
 
-### Can I customize the background color and style of exported PDF notes?
-**Yes, with full palette control.** Taqyeed AI lets you export documents on curated physical-paper palettes (including Warm Peach, Soft Amber, Light Gray, Paper White, Warm Yellow, Deep Slate, Neutral Dark, Warm Stone, Midnight Black, and Zinc) or custom paper textures. The PDF engine automatically inverts text color and adjusts contrast depending on whether you choose a light or dark paper background, producing beautiful, book-quality documents instead of sterile blank PDFs.
+### Is Taqyeed AI really free? Do I need a credit card?
+**Yes, 100% free and open source.** Taqyeed does not charge any fees or subscriptions. Google Gemini offers a generous free tier via Google AI Studio that requires no credit card. You only pay if you choose to use paid tiers or paid third-party models on OpenRouter.
 
-### Can students and researchers outside of Islamic studies use Taqyeed AI?
-**Yes, absolutely.** Taqyeed AI is completely flexible. All prompt actions, formatting styles, and AI settings can be customized for university courses, medical studies, legal research, conference proceedings, or business meetings.
+### Can I customize the background color and style of exported PDFs?
+**Yes.** Taqyeed lets you choose from 10 curated paper palettes (Warm Peach, Soft Amber, Light Gray, Paper White, Warm Yellow, Deep Slate, Neutral Dark, Warm Stone, Midnight Black, and Zinc) or custom background patterns. The PDF engine automatically inverts text color and adjusts contrast to ensure clean readability.
 
-### Is Taqyeed AI free? Are there any hidden fees or subscriptions?
-**Taqyeed AI is 100% free and open-source under the MIT License.** There are zero subscription tiers and zero paywalls. You can use Google Gemini completely free using Google AI Studio’s personal free tier, or connect your own OpenRouter key.
-
-### Does Taqyeed AI require an active internet connection?
-Taking notes, browsing your library, searching recordings, and exporting documents works **100% offline**. An internet connection is only needed when executing AI processing tasks (transcription, summary, or custom actions) with your Gemini or OpenRouter API key.
-
-### How does Taqyeed AI handle Arabic grammar and Quranic verses?
-The system prompts in Taqyeed AI are specifically calibrated to handle classical Arabic (*Fusha*), Quranic verses with accurate Tashkeel, Hadith phrasing, and technical terms across Fiqh, Usul, Aqeedah, and Hadith sciences.
+### Does Taqyeed work offline?
+Taking notes, browsing your library, searching, and exporting PDFs works **100% offline**. An internet connection is only needed when executing AI processing tasks (audio transcription, summary, or custom AI actions).
 
 ---
 
 ## 🤝 Contributing & Community
 
-We warmly welcome contributions from developers, designers, translators, and students of knowledge from all over the world!
+Contributions from developers, students of knowledge, designers, and translators are warmly welcomed!
 
 ### 📣 Open Call for Contributions
 > **Please never hesitate to report bugs, suggest new features, or submit pull requests!**
 > 
-> Whether it's:
-> * 🐛 **Reporting an issue or bug:** Help us identify edge cases in audio recording, PDF export, or UI responsiveness.
-> * 💡 **Recommending new features:** Propose new academic prompts, audio features, or UI improvements.
-> * 🌐 **Localization & Translation:** Translate the UI into additional languages (Urdu, Turkish, Indonesian, Malay, French, etc.).
-> * 💻 **Code Contributions:** Enhance editor extensions, add offline local speech-to-text models (Whisper.cpp), or improve desktop/mobile native integrations.
+> * 🐛 **Bug Reports:** Help us catch edge cases in audio recording, PDF formatting, or cross-platform UI.
+> * 💡 **Feature Suggestions:** Recommend new scholarly prompts, export formats, or workflow tools.
+> * 🌐 **Translations:** Help translate the interface into additional languages (Urdu, Turkish, Indonesian, Malay, etc.).
+> * 💻 **Code Contributions:** Submit PRs for editor enhancements, offline Whisper models, or desktop shortcuts.
 
-### How to Contribute
-1. **Fork the repo** (`https://github.com/okba-boubakeur/Taqyeed-AI`).
-2. **Create your feature branch** (`git checkout -b feature/amazing-feature`).
-3. **Commit your changes** (`git commit -m 'Add some amazing feature'`).
-4. **Push to the branch** (`git push origin feature/amazing-feature`).
-5. **Open a Pull Request** explaining your enhancements.
+1. Fork the repository (`https://github.com/okba-boubakeur/Taqyeed-AI`).
+2. Create your branch (`git checkout -b feature/my-feature`).
+3. Commit your changes (`git commit -m 'Add new feature'`).
+4. Push to branch (`git push origin feature/my-feature`).
+5. Open a Pull Request on GitHub.
 
 To report a bug or request a feature, please [open an issue on GitHub](https://github.com/okba-boubakeur/Taqyeed-AI/issues).
 
@@ -212,7 +190,7 @@ To report a bug or request a feature, please [open an issue on GitHub](https://g
 
 ## 📜 License & Dedication
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+Licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
 
 ### لوجه الله تعالى (Dedication)
 > هذا العمل وقفٌ خيري وصدقة جارية لوجه الله تعالى، صُمِّم وطُوِّر خدمةً لطلبة العلم الشرعي والباحثين وطلاب المعرفة في كل مكان. نسأل الله أن ينفع به كاتبه وقارئه ومطوره ومَن ساهم فيه ونشره.
@@ -222,5 +200,5 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <div align="center">
-  <sub>Built with ❤️ and dedication by <a href="https://github.com/okba-boubakeur">Okba Boubakeur</a> & Open Source Contributors.</sub>
+  <sub>Built with ❤️ by <a href="https://github.com/okba-boubakeur">Okba Boubakeur</a> & Open Source Contributors.</sub>
 </div>
