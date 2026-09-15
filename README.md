@@ -1,11 +1,12 @@
 <div align="center">
 
 # Taqyeed AI (تقييد)
-### The Premier Open-Source AI Note-Taking & Lecture Companion for Students of Islamic Knowledge & Academic Researchers Worldwide
-#### تدوين ذكي، نسخ صوتي مباشر، تلخيص علمي، وتخريج فوري للأحاديث والمصادر — مفتوح المصدر ومجاني لوجه الله تعالى
+### The Premier Open-Source AI Note-Taking, Custom Prompt Studio & Lecture Companion for Students of Islamic Knowledge & Academic Researchers Worldwide
+#### صناعة وتخصيص أدوات وإجراءات الذكاء الاصطناعي، تدوين ذكي، نسخ صوتي مباشر، وتخريج فوري للأحاديث — مفتوح المصدر ومجاني لوجه الله تعالى
 
 [![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Web-blue.svg?style=for-the-badge)](#-downloads--releases)
+[![AI Action Studio](https://img.shields.io/badge/AI%20Actions-100%25%20Customizable-brightgreen.svg?style=for-the-badge)](#-3-customizable-academic--sharia-ai-actions-engine-prompt-studio)
 [![Local-First](https://img.shields.io/badge/Architecture-100%25%20Local--First-purple.svg?style=for-the-badge)](#-privacy--local-first-architecture)
 [![AI Providers](https://img.shields.io/badge/AI%20Providers-Google%20Gemini%20%7C%20OpenRouter-orange.svg?style=for-the-badge)](#-flexible-multi-llm-engine)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge)](#-contributing--community)
@@ -24,9 +25,12 @@
 ---
 
 > ### 💡 What is Taqyeed AI? (قَيِّدْ عِلْمَكَ)
-> **Taqyeed AI (تقييد)** is a free, local-first, privacy-respecting AI note-taking and audio transcription application purpose-built for students of Islamic Sciences (*Talabat al-’Ilm ash-Shar’i*) and academic researchers around the globe. Inspired by the classical Arabic adage **«قَيِّدُوا العِلْمَ بِالكِتَابِ»** (*"Bind knowledge by writing it down"*), Taqyeed AI bridges centuries-old academic diligence with state-of-the-art Generative AI.
+> **Taqyeed AI (تقييد)** is a free, local-first, privacy-respecting AI note-taking and audio lecture companion purpose-built for students of Islamic Sciences (*Talabat al-’Ilm ash-Shar’i*) and academic researchers around the globe. Inspired by the classical Arabic adage **«قَيِّدُوا العِلْمَ بِالكِتَابِ»** (*"Bind knowledge by writing it down"*), Taqyeed AI bridges centuries-old scholarly rigor with state-of-the-art Generative AI.
 > 
-> Unlike generic note-taking apps, Taqyeed AI lets you **write notes while actively recording lectures in real-time**, employs smart AI de-duplication so your personal writings are never overwritten, empowers students with a **built-in AI Action Studio to create, edit, and customize your own AI prompts**, and exports publication-grade academic PDFs with **customizable warm paper backgrounds, textures, and Arabic-native RTL formatting**.
+> ⚡ **The Ultimate Superpower: Fully Customizable AI Actions & Prompt Studio**
+> At the core of Taqyeed AI lies its standout capability: **total freedom to create, edit, customize, and orchestrate your own AI actions**. Students are never restricted to hardcoded prompts. Build bespoke scholarly tools from scratch — including deep Hadith Takhrij and grading according to specific classical authorities, Fiqh rulings extraction, grammatical analysis (*I'rab*), terminology clarification, or custom revision flashcards. Configure dual-context actions that run seamlessly on **highlighted text selections** (smart bubble menu) or across the **entire lecture note** (floating assistant).
+> 
+> Furthermore, Taqyeed AI lets you **write notes while actively recording lectures in real-time**, employs smart AI de-duplication so your personal writings are never overwritten, and exports publication-grade academic PDFs with **customizable warm paper backgrounds, textures, and Arabic-native RTL formatting**.
 
 ---
 
