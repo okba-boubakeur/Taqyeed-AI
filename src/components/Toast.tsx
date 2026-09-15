@@ -74,21 +74,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     success: <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />,
     error: <AlertCircle className="w-5 h-5 text-destructive shrink-0" />,
     warning: <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />,
-    info: <Info className="w-5 h-5 text-sky-500 shrink-0" />,
+    info: <Info className="w-5 h-5 text-amber-500 shrink-0" />,
   };
 
   const borderColors = {
     success: 'border-emerald-500/30',
     error: 'border-destructive/30',
     warning: 'border-amber-500/30',
-    info: 'border-sky-500/30',
+    info: 'border-amber-500/30',
   };
 
   const bgColors = {
     success: 'bg-emerald-500/10',
     error: 'bg-destructive/10',
     warning: 'bg-amber-500/10',
-    info: 'bg-sky-500/10',
+    info: 'bg-amber-500/10',
   };
 
   return (

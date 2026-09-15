@@ -2649,7 +2649,7 @@ CRITICAL RULES:
                   <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                 </button>
 
-                {/* Save Recording to This Note */}
+                {/* Save Recording to This Note (Solid Green with Done Icon) */}
                 <button
                   type="button"
                   onClick={async () => {
@@ -2673,10 +2673,10 @@ CRITICAL RULES:
                       showToast(isRtl ? 'فشل حفظ التسجيل' : 'Failed to save recording', 'error');
                     }
                   }}
-                  className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 cursor-pointer shrink-0"
+                  className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary text-white flex items-center justify-center shadow-xs transition-all cursor-pointer active:scale-95 hover:opacity-90 shrink-0"
                   title={isRtl ? 'حفظ التسجيل' : 'Save Recording'}
                 >
-                  <Check className="w-4.5 h-4.5" strokeWidth={2} />
+                  <Check className="w-4 h-4 md:w-4.5 md:h-4.5 text-white" strokeWidth={2.5} />
                 </button>
               </div>
             </div>
@@ -2844,28 +2844,47 @@ CRITICAL RULES:
             )}
           </AnimatePresence>
 
-          {/* Trigger Button: Styled with BorderBeam and solid green bolt icon */}
+          {/* Trigger Button: Styled with BorderBeam and solid green bolt icon, becomes red and locked during live recording */}
           <button
             type="button"
             onClick={() => {
               if (isAiDraggingRef.current) return;
+              if (isRecording) {
+                showToast(
+                  isRtl
+                    ? 'يرجى إيقاف التسجيل وحفظه أولاً لتتمكن من استخدام إجراءات الزر العائم'
+                    : 'Please stop & save recording first to use floating AI actions',
+                  'warning'
+                );
+                return;
+              }
               setShowAiMenu((prev) => !prev);
             }}
             disabled={isEnhancing}
-            className="relative overflow-hidden w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 hover:from-emerald-400 hover:via-emerald-500 hover:to-emerald-700 text-white border border-emerald-400/50 shadow-xl shadow-emerald-600/35 flex items-center justify-center group cursor-pointer transition-all active:scale-95 disabled:opacity-50"
-            title={isRtl ? 'المساعد الذكي لتقييد AI' : 'Taqyeed AI Assistant'}
+            className={`relative overflow-hidden w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center group cursor-pointer transition-all active:scale-95 disabled:opacity-50 shadow-xl ${
+              isRecording
+                ? 'bg-gradient-to-br from-red-600 via-red-700 to-red-900 border border-red-500/50 shadow-red-950/40 opacity-75'
+                : 'bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 hover:from-emerald-400 hover:via-emerald-500 hover:to-emerald-700 text-white border border-emerald-400/50 shadow-emerald-600/35'
+            }`}
+            title={
+              isRecording
+                ? (isRtl ? 'التسجيل قيد التشغيل — أوقف التسجيل لاستخدام الإجراءات' : 'Recording active — stop recording to use actions')
+                : (isRtl ? 'المساعد الذكي لتقييد AI' : 'Taqyeed AI Assistant')
+            }
           >
-            <BorderBeam
-              size={140}
-              duration={6}
-              colorFrom="#ffffff"
-              colorTo="#a7f3d0"
-              borderWidth={2}
-            />
+            {!isRecording && (
+              <BorderBeam
+                size={140}
+                duration={6}
+                colorFrom="#ffffff"
+                colorTo="#a7f3d0"
+                borderWidth={2}
+              />
+            )}
             {isEnhancing ? (
               <Loader2 className="w-7 h-7 md:w-8 md:h-8 text-white animate-spin relative z-10" strokeWidth={1.5} />
             ) : (
-              <Zap className={`w-7 h-7 md:w-8 md:h-8 text-white fill-white relative z-10 transition-transform duration-300 ${showAiMenu ? 'scale-110 rotate-12' : 'group-hover:scale-110'}`} strokeWidth={0} />
+              <Zap className={`w-7 h-7 md:w-8 md:h-8 ${isRecording ? 'text-white/70 fill-white/70' : 'text-white fill-white'} relative z-10 transition-transform duration-300 ${showAiMenu ? 'scale-110 rotate-12' : 'group-hover:scale-110'}`} strokeWidth={0} />
             )}
           </button>
         </div>

@@ -72,6 +72,28 @@ export function SettingsScreen() {
     setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Model selection presets & state
+  const geminiModelPresets = [
+    { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash' },
+    { value: 'gemini-2.5-flash-lite', label: 'gemini-2.5-flash-lite' },
+    { value: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite' },
+    { value: 'gemini-3.8-flash', label: 'gemini-3.8-flash' },
+    { value: 'other', label: isRtl ? 'أخرى (نموذج مخصص)' : 'Other (Custom model)' },
+  ];
+
+  const openRouterModelPresets = [
+    { value: 'google/gemini-2.5-flash', label: 'google/gemini-2.5-flash' },
+    { value: 'google/gemini-2.5-flash-lite', label: 'google/gemini-2.5-flash-lite' },
+    { value: 'deepseek/deepseek-chat', label: 'deepseek/deepseek-chat' },
+    { value: 'anthropic/claude-3.5-sonnet', label: 'anthropic/claude-3.5-sonnet' },
+    { value: 'meta-llama/llama-3.3-70b-instruct', label: 'meta-llama/llama-3.3-70b-instruct' },
+    { value: 'other', label: isRtl ? 'أخرى (نموذج مخصص)' : 'Other (Custom model)' },
+  ];
+
+  const activeModelPresets = localSettings.llmProvider === 'gemini' ? geminiModelPresets : openRouterModelPresets;
+  const isCurrentModelPreset = activeModelPresets.some(p => p.value !== 'other' && p.value === localSettings.llmModel);
+  const [isCustomModelMode, setIsCustomModelMode] = useState<boolean>(!isCurrentModelPreset);
+
   // API Key show/hide and testing state
   const [showApiKey, setShowApiKey] = useState(false);
   const [isTestingKey, setIsTestingKey] = useState(false);
@@ -522,9 +544,18 @@ export function SettingsScreen() {
                       value={localSettings.llmProvider}
                       options={providerOptions}
                       onChange={(val) => {
-                        const updated = { ...localSettings, llmProvider: val as any };
+                        const newProvider = val as any;
+                        let newModel = localSettings.llmModel;
+                        if (!isCustomModelMode) {
+                          if (newProvider === 'gemini') {
+                            newModel = 'gemini-2.5-flash';
+                          } else if (newProvider === 'openrouter') {
+                            newModel = 'google/gemini-2.5-flash';
+                          }
+                        }
+                        const updated = { ...localSettings, llmProvider: newProvider, llmModel: newModel };
                         setLocalSettings(updated);
-                        updateSettings({ llmProvider: val as any });
+                        updateSettings({ llmProvider: newProvider, llmModel: newModel });
                       }}
                     />
                   </div>
@@ -654,19 +685,40 @@ export function SettingsScreen() {
                   </div>
 
                   {localSettings.llmProvider !== 'sidecar' && (
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5">{t.modelName}</label>
-                      <input
-                        type="text"
-                        className="w-full border border-border bg-background rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary outline-none transition-shadow"
-                        value={localSettings.llmModel}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setLocalSettings({ ...localSettings, llmModel: val });
-                          updateSettings({ llmModel: val });
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-foreground">{t.modelName}</label>
+                      <CustomSelect
+                        value={isCustomModelMode || !isCurrentModelPreset ? 'other' : localSettings.llmModel}
+                        options={activeModelPresets}
+                        onChange={(val) => {
+                          if (val === 'other') {
+                            setIsCustomModelMode(true);
+                          } else {
+                            setIsCustomModelMode(false);
+                            setLocalSettings(prev => ({ ...prev, llmModel: val }));
+                            updateSettings({ llmModel: val });
+                          }
                         }}
-                        placeholder="e.g. gemini-2.5-flash"
                       />
+                      {(isCustomModelMode || !isCurrentModelPreset) && (
+                        <div className="pt-1">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1">
+                            {isRtl ? 'أدخل اسم النموذج المخصص:' : 'Enter custom model name:'}
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-border bg-background rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary outline-none transition-shadow font-mono"
+                            value={localSettings.llmModel}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setLocalSettings(prev => ({ ...prev, llmModel: val }));
+                              updateSettings({ llmModel: val });
+                            }}
+                            placeholder={localSettings.llmProvider === 'gemini' ? 'e.g. gemini-1.5-pro' : 'e.g. mistralai/mistral-large'}
+                            autoFocus
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 
