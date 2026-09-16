@@ -3,7 +3,7 @@
 <img src="public/logo.svg" alt="Taqyeed AI Logo" width="105" height="105" />
 
 # Taqyeed AI (تقييد)
-
+https://taqyeed.netlify.app/
 ### Bind Your Knowledge — Smart Lecture Recording, Note-Taking & Custom AI Actions
 #### قَيِّدْ عِلْمَكَ — تدوين ذكي وتسجيل للدروس والمحاضرات مع أدوات ذكاء اصطناعي مخصصة — مفتوح المصدر
 
