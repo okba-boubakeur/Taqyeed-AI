@@ -1,4 +1,4 @@
-# Ulum Notes - Agent Guidelines & Repository Rules
+# Taqyeed AI - Agent Guidelines & Repository Rules
 
 ## UI & Design Rules
 

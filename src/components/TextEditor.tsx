@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -13,13 +14,14 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, CheckCheck, ListTree,
   Shrink, Feather, BookOpen, Languages, Table, Globe, Search, ArrowLeft, ArrowRight, ArrowUp, Folder,
   Copy, Scissors, CheckSquare, Image as ImageIcon, Palette, Type, ChevronDown,
-  Lightbulb, HelpCircle, Play, Pause
+  Lightbulb, HelpCircle, Play, Pause, Share2
 } from 'lucide-react';
 import { getCounterpartBackground } from '../services/backgroundThemeSync';
-import { useAppStore, defaultAiActionPrompts, AiActionPrompts, QuickActionItem, defaultQuickActions, defaultGeneralActions, worldLanguages } from '../store';
+import { useAppStore, defaultAiActionPrompts, AiActionPrompts, QuickActionItem, defaultAiActions, getEffectiveAiActions, worldLanguages } from '../store';
 import { translations } from '../translations';
 import { streamEnhanceContent, executeTargetedQuickAction, getEffectiveApiKey } from '../services/llm';
 import { exportToPDF } from '../services/pdfExport';
+import { deleteNoteAudioFile } from '../services/recordings';
 import { db, Note } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'motion/react';
@@ -236,7 +238,7 @@ const isArabicContent = (text: string): boolean => {
 
 export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => void }) {
   const { settings, setIsNoteOpen, activeNoteId, setActiveNoteId, setActiveScreen, setActiveView, isNewNote, setIsNewNote, isRecording, isPaused, recordingTime, activeRecordingNoteId, setActiveRecordingNoteId } = useAppStore();
-  const { pauseRecording, resumeRecording, saveRecording: saveRecordingHook, discardRecording: discardRecordingHook } = useRecorder();
+  const { startRecording, pauseRecording, resumeRecording, saveRecording: saveRecordingHook, discardRecording: discardRecordingHook } = useRecorder();
   const t = translations[settings.language] || translations.ar;
   const isRtl = settings.language === 'ar';
   const { showToast } = useToast();
@@ -328,13 +330,9 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     e.target.value = '';
   };
 
-  // Smart Targeted Selection & Context Menu State
+  // Smart Targeted Selection State
   const [selectedRange, setSelectedRange] = useState<{ from: number; to: number; text: string } | null>(null);
   const pendingSelectionRef = useRef<{ from: number; to: number; text: string } | null>(null);
-  const [showContextMenu, setShowContextMenu] = useState(false);
-  const [contextCoords, setContextCoords] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [showSelectionBubble, setShowSelectionBubble] = useState(false);
-  const [bubbleCoords, setBubbleCoords] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isProcessingActionId, setIsProcessingActionId] = useState<string | null>(null);
   const isProcessingActionIdRef = useRef<string | null>(null);
   const undoTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -431,10 +429,6 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
   const initialZoomRef = useRef<number>(1.0);
   const isPinchingRef = useRef<boolean>(false);
 
-  // Long-press detection to intercept native context menu before it fires
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTouchRef = useRef<{ clientX: number; clientY: number } | null>(null);
-
   // Desktop Wheel & Keyboard Zoom Listeners (Ctrl + Wheel, Ctrl + '+', Ctrl + '-', Ctrl + '0')
   useEffect(() => {
     const container = noteContainerRef.current;
@@ -472,8 +466,10 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     };
   }, []);
 
-  // Mobile/Tablet Two-Finger Pinch-to-Zoom Handlers + Long-press AI bubble trigger
+  // Mobile/Tablet Two-Finger Pinch-to-Zoom Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
     if (e.touches.length === 2) {
       isPinchingRef.current = true;
       const t1 = e.touches[0];
@@ -481,60 +477,10 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
       const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
       touchStartDistRef.current = dist;
       initialZoomRef.current = zoomLevel;
-      // Cancel any pending long-press if second finger arrives
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
-      return;
-    }
-
-    // Single finger: start long-press timer (fires at 450ms — before native menu at ~500ms)
-    if (e.touches.length === 1 && editor && !editor.isDestroyed && isEditing) {
-      const touch = e.touches[0];
-      longPressTouchRef.current = { clientX: touch.clientX, clientY: touch.clientY };
-      longPressTimerRef.current = setTimeout(() => {
-        if (!editor || editor.isDestroyed || !longPressTouchRef.current) return;
-        const { clientX, clientY } = longPressTouchRef.current;
-        // Select the word under the finger
-        const pos = editor.view.posAtCoords({ left: clientX, top: clientY })?.pos;
-        if (pos != null) {
-          const $pos = editor.state.doc.resolve(pos);
-          const blockText = $pos.parent.textBetween(0, $pos.parent.content.size);
-          const offset = $pos.parentOffset;
-          let startOffset = offset;
-          let endOffset = offset;
-          while (startOffset > 0 && !/\s/.test(blockText[startOffset - 1])) startOffset--;
-          while (endOffset < blockText.length && !/\s/.test(blockText[endOffset])) endOffset++;
-          if (endOffset > startOffset) {
-            const startPos = $pos.start() + startOffset;
-            const endPos = $pos.start() + endOffset;
-            editor.commands.setTextSelection({ from: startPos, to: endPos });
-            const wordText = blockText.slice(startOffset, endOffset);
-            setSelectedRange({ from: startPos, to: endPos, text: wordText });
-            pendingSelectionRef.current = { from: startPos, to: endPos, text: wordText };
-            // Position the AI bubble above the touch point
-            const padding = 16;
-            const bubbleWidth = 140;
-            const bubbleHeight = 40;
-            setBubbleCoords({
-              x: Math.min(Math.max(padding, clientX - bubbleWidth / 2), window.innerWidth - bubbleWidth - padding),
-              y: Math.max(65, Math.min(clientY - 58, window.innerHeight - bubbleHeight - padding)),
-            });
-            setShowSelectionBubble(true);
-          }
-        }
-        longPressTimerRef.current = null;
-      }, 450);
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // Any movement cancels the long-press (user is scrolling, not holding)
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
     if (isPinchingRef.current && e.touches.length === 2 && touchStartDistRef.current) {
       const t1 = e.touches[0];
       const t2 = e.touches[1];
@@ -546,10 +492,6 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
     if (e.touches.length < 2) {
       isPinchingRef.current = false;
       touchStartDistRef.current = null;
@@ -671,40 +613,26 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     onSelectionUpdate: ({ editor }) => {
       if (editor.isDestroyed || isLoadingRef.current) return;
       const { from, to } = editor.state.selection;
+
       if (from !== to) {
-        // Guard: do not show bubble or trigger actions if selection intersects active AI processing text
+        // Guard: do not track selection if it intersects active AI processing text
         let hasAiProcessing = false;
         editor.state.doc.nodesBetween(from, to, (node) => {
           if (node.marks?.some((m) => m.type.name === 'aiProcessing')) {
             hasAiProcessing = true;
           }
         });
-        if (hasAiProcessing) {
-          setShowSelectionBubble(false);
-          return;
-        }
+        if (hasAiProcessing) return;
 
         const text = editor.state.doc.textBetween(from, to, ' ');
         if (text.trim().length > 0) {
           setSelectedRange({ from, to, text });
           pendingSelectionRef.current = { from, to, text };
-          try {
-            const coords = editor.view.coordsAtPos(to);
-            const padding = 16;
-            const bubbleWidth = 120;
-            const bubbleHeight = 40;
-            setBubbleCoords({
-              x: Math.min(Math.max(padding, coords.left), Math.max(padding, window.innerWidth - bubbleWidth - padding)),
-              y: Math.max(65, Math.min(coords.top - 54, window.innerHeight - bubbleHeight - padding)),
-            });
-            setShowSelectionBubble(true);
-          } catch {
-            setShowSelectionBubble(false);
-          }
           return;
         }
       }
-      setShowSelectionBubble(false);
+      setSelectedRange(null);
+      pendingSelectionRef.current = null;
     },
   });
 
@@ -735,27 +663,6 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
       }
     }
   }, [isEditing, isEnhancing, editor, isNoteRtl, isDarkPaper]);
-
-  // Block native Android/iOS context menu at the DOM level (second layer of protection).
-  // React's synthetic onContextMenu is not always enough in Android WebView — the native
-  // long-press "Copy/Paste" popup fires before React can intercept it. Attaching a
-  // non-passive native listener directly on the ProseMirror DOM node stops it at the root.
-  useEffect(() => {
-    if (!editor || editor.isDestroyed) return;
-    const dom = editor.view.dom as HTMLElement;
-    const blockNativeMenu = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-    };
-    // Apply CSS that blocks the iOS/Android callout popup
-    dom.style.setProperty('-webkit-touch-callout', 'none');
-    dom.style.setProperty('-webkit-user-select', 'text'); // still allow text selection
-    dom.addEventListener('contextmenu', blockNativeMenu, { capture: true });
-    return () => {
-      dom.removeEventListener('contextmenu', blockNativeMenu, { capture: true });
-    };
-  }, [editor]);
 
   // Helper: persist editor state to DB
   const persistNote = useCallback(async (noteId: number) => {
@@ -1167,6 +1074,19 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
       }
     };
 
+    const handleStartAudioRecording = async () => {
+      if (activeNote?.id) {
+        setActiveRecordingNoteId(activeNote.id);
+        await startRecording(settings.enhancedRecording ? 'system' : 'mic');
+      }
+    };
+
+    const handleImportAudio = () => {
+      audioFileRef.current?.click();
+    };
+
+    window.addEventListener('start-note-audio-recording', handleStartAudioRecording);
+    window.addEventListener('import-note-audio', handleImportAudio);
     window.addEventListener('export-note-pdf', handleExportEvent);
     window.addEventListener('share-note', handleShareEvent);
     window.addEventListener('copy-note-text', handleCopyTextEvent);
@@ -1174,13 +1094,15 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
     window.addEventListener('delete-active-note', handleDeleteActiveEvent);
 
     return () => {
+      window.removeEventListener('start-note-audio-recording', handleStartAudioRecording);
+      window.removeEventListener('import-note-audio', handleImportAudio);
       window.removeEventListener('export-note-pdf', handleExportEvent);
       window.removeEventListener('share-note', handleShareEvent);
       window.removeEventListener('copy-note-text', handleCopyTextEvent);
       window.removeEventListener('duplicate-active-note', handleDuplicateActiveEvent);
       window.removeEventListener('delete-active-note', handleDeleteActiveEvent);
     };
-  }, [handleExport, handleShare, activeNote, editor, isRtl, showToast]);
+  }, [handleExport, handleShare, activeNote, editor, isRtl, showToast, setActiveRecordingNoteId, startRecording, settings.enhancedRecording]);
 
   // AI Enhancement handler with custom prompt support
   const handleEnhance = useCallback(async (customPrompt?: string) => {
@@ -1286,6 +1208,9 @@ export function TextEditor({ onAudioUpload }: { onAudioUpload?: (file: File) => 
   const handleDeleteAudioFromNote = useCallback(async () => {
     if (!activeNote?.id) return;
     try {
+      if (activeNote.audioPath) {
+        await deleteNoteAudioFile(activeNote.audioPath);
+      }
       await db.notes.update(activeNote.id, {
         audioBlob: undefined,
         audioPath: undefined,
@@ -1494,99 +1419,6 @@ CRITICAL RULES:
     );
   }, [languageSearch]);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    // ALWAYS prevent the native browser/Android context menu inside the editor.
-    // On touch devices this fires from a long-press; we show our AI bubble instead.
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!editor || editor.isDestroyed) return;
-    if (isProcessingActionId !== null) return;
-
-    // On touch devices: if there is already a selection show our menu;
-    // if not (finger just touched), the long-press timer above will handle selection.
-    if (isTouchDevice()) {
-      const { from, to } = editor.state.selection;
-      if (from === to) return; // long-press timer will pick this up
-    }
-
-    let { from, to } = editor.state.selection;
-    let text = '';
-
-    // Ignore if selection intersects active AI processing text
-    let hasAiProcessing = false;
-    editor.state.doc.nodesBetween(from, to, (node) => {
-      if (node.marks?.some((m) => m.type.name === 'aiProcessing')) {
-        hasAiProcessing = true;
-      }
-    });
-    if (hasAiProcessing) return;
-
-    if (from === to) {
-      // Desktop mouse right-click auto word selection
-      const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })?.pos;
-      if (pos != null) {
-        const $pos = editor.state.doc.resolve(pos);
-        const textBlock = $pos.parent.textBetween(0, $pos.parent.content.size);
-        const offset = $pos.parentOffset;
-        let startOffset = offset;
-        let endOffset = offset;
-        while (startOffset > 0 && !/\s/.test(textBlock[startOffset - 1])) {
-          startOffset--;
-        }
-        while (endOffset < textBlock.length && !/\s/.test(textBlock[endOffset])) {
-          endOffset++;
-        }
-        if (endOffset > startOffset) {
-          const startPos = $pos.start() + startOffset;
-          const endPos = $pos.start() + endOffset;
-          editor.commands.setTextSelection({ from: startPos, to: endPos });
-          from = startPos;
-          to = endPos;
-        }
-      }
-    }
-
-    text = editor.state.doc.textBetween(from, to, ' ');
-    if (text.trim().length > 0) {
-      e.preventDefault();
-      setSelectedRange({ from, to, text });
-      pendingSelectionRef.current = { from, to, text };
-
-      const menuWidth = 300;
-      const menuHeight = 440;
-      const padding = 16;
-      let targetY = e.clientY;
-      if (e.clientY + menuHeight > window.innerHeight - padding && e.clientY - menuHeight >= padding) {
-        targetY = e.clientY - menuHeight;
-      }
-      const x = Math.min(Math.max(padding, e.clientX), Math.max(padding, window.innerWidth - menuWidth - padding));
-      const y = Math.min(Math.max(padding, targetY), Math.max(padding, window.innerHeight - menuHeight - padding));
-      setContextCoords({ x, y });
-      setShowContextMenu(true);
-      setShowSelectionBubble(false);
-    }
-  };
-
-  const handleOpenFromBubble = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isProcessingActionId !== null) return;
-    const currentRange = selectedRange || pendingSelectionRef.current;
-    if (!currentRange) return;
-    const menuWidth = 300;
-    const menuHeight = 440;
-    const padding = 16;
-    let targetY = bubbleCoords.y + 40;
-    if (bubbleCoords.y + 40 + menuHeight > window.innerHeight - padding && bubbleCoords.y - menuHeight - 10 >= padding) {
-      targetY = bubbleCoords.y - menuHeight - 10;
-    }
-    const x = Math.min(Math.max(padding, bubbleCoords.x), Math.max(padding, window.innerWidth - menuWidth - padding));
-    const y = Math.min(Math.max(padding, targetY), Math.max(padding, window.innerHeight - menuHeight - padding));
-    setContextCoords({ x, y });
-    setShowContextMenu(true);
-    setShowSelectionBubble(false);
-  };
-
   const removeAiProcessingMark = (actionId: string) => {
     if (!editor || editor.isDestroyed) return;
     let matchedFrom: number | null = null;
@@ -1626,8 +1458,6 @@ CRITICAL RULES:
     if (action.prompt.includes('{{TARGET_LANGUAGE}}') && !targetLanguage) {
       pendingSelectionRef.current = currentRange;
       setActiveActionForLanguage(action);
-      setShowContextMenu(false);
-      setShowSelectionBubble(false);
       setShowLanguagePicker(true);
       return;
     }
@@ -1635,9 +1465,6 @@ CRITICAL RULES:
     const { from, to, text } = currentRange;
     const actionId = `ai-${Date.now()}`;
 
-    // DISMISS ALL MENUS IMMEDIATELY (Requirement 3)
-    setShowContextMenu(false);
-    setShowSelectionBubble(false);
     setShowLanguagePicker(false);
     setActiveActionForLanguage(null);
     setSelectedRange(null);
@@ -1733,7 +1560,7 @@ CRITICAL RULES:
     if (customModalMode === 'general') {
       if (savePromptToActionList) {
         const name = prompt.length > 25 ? prompt.slice(0, 25) + '…' : prompt;
-        useAppStore.getState().addGeneralAction({
+        useAppStore.getState().addAiAction({
           name,
           nameAr: name,
           prompt,
@@ -1741,7 +1568,7 @@ CRITICAL RULES:
           enabled: true,
           isCustom: true,
         });
-        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات العامة' : 'Saved to General Actions list', 'success');
+        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات الذكية' : 'Saved to Unified AI Actions list', 'success');
       }
 
       setCustomModalPrompt('');
@@ -1769,7 +1596,7 @@ CRITICAL RULES:
       };
 
       if (savePromptToActionList) {
-        useAppStore.getState().addQuickAction({
+        useAppStore.getState().addAiAction({
           name,
           nameAr: name,
           prompt,
@@ -1777,7 +1604,7 @@ CRITICAL RULES:
           enabled: true,
           isCustom: true,
         });
-        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات السريعة' : 'Saved to Quick Actions list', 'success');
+        showToast(isRtl ? 'تم حفظ الأمر في قائمة الإجراءات الذكية' : 'Saved to Unified AI Actions list', 'success');
       }
 
       setCustomModalPrompt('');
@@ -2042,101 +1869,60 @@ CRITICAL RULES:
   // ─────────────────────────────────────────────────────────────
   // 4. Render: Note View (Locked or Editing)
   // ─────────────────────────────────────────────────────────────
+  const headerPortalTarget = typeof document !== 'undefined' ? document.getElementById('header-actions-portal') : null;
+  const headerActions = (
+    <>
+      {isEditing && (
+        <>
+          <button
+            type="button"
+            onClick={() => editor && !editor.isDestroyed && editor.chain().focus().undo().run()}
+            disabled={!editor || editor.isDestroyed || !editor.can().undo()}
+            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 disabled:opacity-30 cursor-pointer"
+            title={isRtl ? 'تراجع' : 'Undo'}
+          >
+            <Undo className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor && !editor.isDestroyed && editor.chain().focus().redo().run()}
+            disabled={!editor || editor.isDestroyed || !editor.can().redo()}
+            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 disabled:opacity-30 cursor-pointer"
+            title={isRtl ? 'إعادة' : 'Redo'}
+          >
+            <Redo className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        </>
+      )}
+      <button
+        type="button"
+        onClick={handleToggleEdit}
+        className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 cursor-pointer"
+        title={isEditing ? (isRtl ? 'تم (قفل الملاحظة)' : 'Done (Lock Note)') : (isRtl ? 'تعديل الملاحظة' : 'Edit Note')}
+      >
+        {isEditing ? (
+          <Check className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
+        ) : (
+          <Edit3 className="w-5 h-5" strokeWidth={1.5} />
+        )}
+      </button>
+    </>
+  );
+
   return (
-    <div className="flex flex-col h-full bg-card rounded-none border-0 md:rounded-2xl md:border md:border-border overflow-hidden shadow-sm animate-in fade-in zoom-in-95 duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* ── Top Header Bar ── */}
-      <div className="px-3 py-3 md:px-6 md:py-4 border-b border-border flex items-center justify-between bg-card/70 backdrop-blur-md sticky top-0 z-10 shrink-0">
-        <div className="flex items-center gap-3 flex-1 min-w-0 pr-2 md:pr-4">
-          <div className="flex-1 min-w-0">
-            {isEditing ? (
-              <input
-                type="text"
-                value={editedTitle}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder={isRtl ? 'عنوان الملاحظة...' : 'Note title...'}
-                className="w-full max-w-sm md:max-w-md bg-transparent border-0 border-b border-border focus:border-primary px-1 py-1 text-lg md:text-xl font-bold text-foreground outline-none transition-colors"
-                autoFocus
-              />
-            ) : (
-              <h2 className="text-lg md:text-xl font-bold text-foreground truncate select-none">
-                {activeNote.title || (isRtl ? 'بدون عنوان' : 'Untitled Note')}
-              </h2>
-            )}
-          </div>
-        </div>
+    <div className="flex flex-col h-full bg-card rounded-none border-0 md:rounded-2xl md:border md:border-border overflow-hidden shadow-sm animate-in fade-in zoom-in-95 duration-200 relative" dir={isRtl ? 'rtl' : 'ltr'}>
+      {headerPortalTarget && createPortal(headerActions, headerPortalTarget)}
 
-        {/* Action buttons (Containerless outline icons) */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* Undo / Redo buttons (only in edit mode) */}
-          {isEditing && (
-            <>
-              <button
-                type="button"
-                onClick={() => editor && !editor.isDestroyed && editor.chain().focus().undo().run()}
-                disabled={!editor || editor.isDestroyed || !editor.can().undo()}
-                className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 disabled:opacity-30 cursor-pointer"
-                title={isRtl ? 'تراجع' : 'Undo'}
-              >
-                <Undo className="w-5 h-5" strokeWidth={1.5} />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor && !editor.isDestroyed && editor.chain().focus().redo().run()}
-                disabled={!editor || editor.isDestroyed || !editor.can().redo()}
-                className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 disabled:opacity-30 cursor-pointer"
-                title={isRtl ? 'إعادة' : 'Redo'}
-              >
-                <Redo className="w-5 h-5" strokeWidth={1.5} />
-              </button>
-            </>
-          )}
-
-          {/* Edit / Done Lock Toggle Button */}
-          <button
-            type="button"
-            onClick={handleToggleEdit}
-            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 cursor-pointer"
-            title={isEditing ? (isRtl ? 'تم (قفل الملاحظة)' : 'Done (Lock Note)') : (isRtl ? 'تعديل الملاحظة' : 'Edit Note')}
-          >
-            {isEditing ? (
-              <Check className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
-            ) : (
-              <Edit3 className="w-5 h-5" strokeWidth={1.5} />
-            )}
-          </button>
-
-          {/* Togglable formatting tools button with "Aa" icon placed at the very right side */}
-          <button
-            type="button"
-            onClick={() => {
-              if (!isEditing && !showToolbar) {
-                setIsEditing(true);
-              }
-              setShowToolbar(prev => !prev);
-            }}
-            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-95 cursor-pointer select-none ${
-              showToolbar 
-                ? 'text-primary bg-primary/10 border border-primary/30 shadow-xs' 
-                : 'text-foreground hover:bg-muted border border-transparent'
-            }`}
-            title={isRtl ? 'أدوات التنسيق (Aa)' : 'Formatting tools (Aa)'}
-          >
-            <span className="font-serif font-bold text-base tracking-tighter leading-none">
-              Aa
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── Togglable Formatting Toolbar ── */}
+      {/* ── Floating Formatting Toolbar ── */}
       <AnimatePresence>
-        {showToolbar && editor && (
+        {(editor?.isFocused || selectedRange !== null) && editor && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="overflow-hidden border-b border-border bg-muted/40 backdrop-blur-xs shrink-0"
+            className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-8 z-40 overflow-hidden border border-border bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl shrink-0 pointer-events-auto"
+            onMouseDown={(e) => e.preventDefault()}
           >
             <input 
               ref={imageFileInputRef} 
@@ -2156,14 +1942,14 @@ CRITICAL RULES:
                     return next;
                   });
                 }}
-                className={`p-2 rounded-xl transition-all shrink-0 cursor-pointer border ${
-                  isNoteRtl 
-                    ? 'bg-primary/15 text-primary border-primary/30 shadow-2xs' 
-                    : 'bg-muted text-muted-foreground border-border/70 hover:text-foreground'
-                }`}
+                className="p-2 rounded-xl transition-all shrink-0 cursor-pointer text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 title={isNoteRtl ? (isRtl ? 'اتجاه النص: من اليمين لليسار (RTL)' : 'Text Direction: Right-to-Left (RTL)') : (isRtl ? 'اتجاه النص: من اليسار لليمين (LTR)' : 'Text Direction: Left-to-Right (LTR)')}
               >
-                {isNoteRtl ? <ArrowLeft className="w-5 h-5 shrink-0" strokeWidth={2} /> : <ArrowRight className="w-5 h-5 shrink-0" strokeWidth={2} />}
+                {isNoteRtl ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m12 8l-4 4l4 4m4-4H8"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8m-4 4l4-4l-4-4"/></svg>
+                )}
               </button>
 
               <div className="w-[1px] h-5 bg-border mx-0.5 shrink-0" />
@@ -2663,21 +2449,41 @@ CRITICAL RULES:
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onContextMenu={handleContextMenu}
-        onClick={() => {
+        onClick={(e) => {
           const domSel = typeof window !== 'undefined' ? window.getSelection() : null;
           if (domSel && domSel.toString().trim().length > 0) return;
+          
+          // Prevent editor from stealing focus if the user clicks the title input
+          if (e.target instanceof HTMLInputElement) return;
+
           if (isEditing && editor && !editor.isDestroyed && !editor.isFocused) {
             editor.commands.focus();
           }
         }}
       >
         <div 
-          className="note-zoom-canvas h-full w-full"
+          className="note-zoom-canvas h-full w-full relative"
           style={{
             zoom: zoomLevel,
           }}
         >
+          {/* Note Title placed in the writing area */}
+          <div className="mb-4 mt-2 px-1">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder={isRtl ? 'عنوان الملاحظة...' : 'Note title...'}
+                className="w-full bg-transparent border-0 py-2 text-2xl md:text-3xl font-bold text-foreground outline-none placeholder:text-muted-foreground/50 transition-colors"
+                autoFocus={!isNewNote}
+              />
+            ) : (
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground py-2 select-text outline-none">
+                {activeNote?.title || (isRtl ? 'بدون عنوان' : 'Untitled Note')}
+              </h1>
+            )}
+          </div>
           {/* ── In-Note Live Recording Card (appears when "Continue & Write" is active) ── */}
           {isRecording && activeRecordingNoteId === activeNote?.id && (
             <div className="mb-4 mx-0 rounded-2xl border border-red-500/30 bg-red-500/5 dark:bg-red-500/10 backdrop-blur-sm p-3.5 select-none" dir="ltr">
@@ -2881,6 +2687,48 @@ CRITICAL RULES:
                   className="absolute bottom-full right-0 mb-3 w-72 sm:w-80 max-h-[82vh] flex flex-col bg-card border border-border shadow-2xl rounded-2xl p-2.5 z-20 select-none overflow-hidden"
                   dir={isRtl ? 'rtl' : 'ltr'}
                 >
+                  {/* Scope Indicator Header */}
+                  {(() => {
+                    const currentRange = selectedRange || pendingSelectionRef.current;
+                    const hasSelectedText = Boolean(currentRange && currentRange.text.trim().length > 0);
+                    const wordCount = hasSelectedText
+                      ? currentRange!.text.trim().split(/\s+/).filter(Boolean).length
+                      : 0;
+
+                    return hasSelectedText ? (
+                      <div className="px-2.5 py-1.5 mb-2 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                          <span className="font-semibold text-foreground truncate">
+                            {isRtl ? `النص المحدد (${wordCount} كلمة)` : `Selected text (${wordCount} words)`}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRange(null);
+                            pendingSelectionRef.current = null;
+                            if (editor && !editor.isDestroyed) {
+                              editor.commands.setTextSelection(editor.state.selection.to);
+                            }
+                          }}
+                          className="text-[10px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted transition-colors cursor-pointer shrink-0"
+                          title={isRtl ? 'إلغاء التحديد وتطبيق على كامل الملاحظة' : 'Deselect to target entire note'}
+                        >
+                          {isRtl ? 'إلغاء التحديد' : 'Deselect'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="px-2.5 py-1.5 mb-2 rounded-xl bg-muted/25 border border-border/40 flex items-center gap-2 text-xs text-muted-foreground">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">
+                          {isRtl ? 'النطاق: كامل الملاحظة' : 'Scope: Entire Note'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
                   {/* Menu Items List */}
                   <div className="space-y-1 overflow-y-auto flex-1 max-h-72 pr-0.5">
                     {/* Custom Option: identical UI to other options in the list */}
@@ -2888,14 +2736,16 @@ CRITICAL RULES:
                       className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-muted/80 transition-all group cursor-pointer"
                       onClick={() => {
                         setShowAiMenu(false);
-                        setCustomModalMode('general');
+                        const currentRange = selectedRange || pendingSelectionRef.current;
+                        const hasSelectedText = Boolean(currentRange && currentRange.text.trim().length > 0);
+                        setCustomModalMode(hasSelectedText ? 'selection' : 'general');
                         setCustomModalPrompt('');
                         setSavePromptToActionList(false);
                         setShowCustomPromptModal(true);
                       }}
                     >
                       <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 text-foreground">
-                        <Sparkles className="w-4 h-4" />
+                        <Sparkles className="w-4 h-4 text-foreground" />
                       </div>
                       <div className="flex-1 min-w-0 text-left rtl:text-right">
                         <div className="text-xs font-semibold text-foreground transition-colors truncate">
@@ -2905,17 +2755,22 @@ CRITICAL RULES:
                     </div>
 
                     {(() => {
-                      const enabledActions = (settings.generalActions || defaultGeneralActions).filter(action => action.enabled !== false);
+                      const enabledActions = getEffectiveAiActions(settings).filter(action => action.enabled !== false);
                       if (enabledActions.length === 0) {
                         return (
                           <div className="p-3 text-center text-xs text-muted-foreground">
-                            {isRtl ? 'لا توجد إجراءات عامة مفعلة' : 'No active general actions'}
+                            {isRtl ? 'لا توجد إجراءات ذكية مفعلة' : 'No active AI actions'}
                           </div>
                         );
                       }
+                      const currentRange = selectedRange || pendingSelectionRef.current;
+                      const hasSelectedText = Boolean(currentRange && currentRange.text.trim().length > 0);
+
                       return enabledActions.map((action) => {
                         const Icon = getActionIcon(action.icon);
                         const isSelected = settings.selectedAiOption === action.id;
+                        const isTranslate = action.prompt.includes('{{TARGET_LANGUAGE}}');
+
                         return (
                           <div
                             key={action.id}
@@ -2923,18 +2778,33 @@ CRITICAL RULES:
                             onClick={() => {
                               setShowAiMenu(false);
                               useAppStore.getState().updateSettings({ selectedAiOption: action.id });
-                              handleEnhance(action.prompt);
+
+                              if (isTranslate) {
+                                setActiveActionForLanguage(action);
+                                setShowLanguagePicker(true);
+                              } else if (hasSelectedText) {
+                                handleExecuteQuickAction(action);
+                              } else {
+                                handleEnhance(action.prompt);
+                              }
                             }}
                           >
                             <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 text-foreground">
-                              <Icon className="w-4 h-4" />
+                              <Icon className="w-4 h-4 text-foreground" />
                             </div>
                             <div className="flex-1 min-w-0 text-left rtl:text-right">
                               <div className="text-xs font-semibold text-foreground transition-colors truncate flex items-center justify-between">
                                 <span>{isRtl ? (action.nameAr || action.name) : action.name}</span>
-                                {isSelected && (
-                                  <Check className="w-3.5 h-3.5 text-foreground shrink-0" />
-                                )}
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {isTranslate && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                      {isRtl ? 'لغات العالم' : 'All Languages'}
+                                    </span>
+                                  )}
+                                  {isSelected && !hasSelectedText && (
+                                    <Check className="w-3.5 h-3.5 text-foreground" />
+                                  )}
+                                </div>
                               </div>
                             </div>
                             {action.isCustom && (
@@ -2943,12 +2813,12 @@ CRITICAL RULES:
                                 title={isRtl ? 'حذف الإجراء' : 'Delete action'}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  useAppStore.getState().removeGeneralAction(action.id);
+                                  useAppStore.getState().removeAiAction(action.id);
                                   showToast(isRtl ? 'تم حذف الإجراء' : 'Action deleted', 'success');
                                 }}
                                 className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
                               </button>
                             )}
                           </div>
@@ -3056,225 +2926,6 @@ CRITICAL RULES:
                 >
                   {t.delete}
                 </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Floating Selection Bubble (Mobile & Quick Access) ── */}
-      <AnimatePresence>
-        {showSelectionBubble && !showContextMenu && !showLanguagePicker && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 5 }}
-            transition={{ duration: 0.15 }}
-            style={{
-              position: 'fixed',
-              left: bubbleCoords.x,
-              top: bubbleCoords.y,
-              zIndex: 90,
-              pointerEvents: 'none',
-            }}
-          >
-            <button
-              type="button"
-              onClick={handleOpenFromBubble}
-              style={{ pointerEvents: 'auto' }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background font-medium text-xs rounded-full shadow-xl hover:scale-105 active:scale-95 transition-all border border-background/20 cursor-pointer select-none"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
-              <span>{isRtl ? 'إجراءات ذكية' : 'AI Actions'}</span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Contextual Menu Popover ── */}
-      <AnimatePresence>
-        {showContextMenu && (
-          <div 
-            className={`fixed inset-0 z-[100] ${
-              isSmallScreen 
-                ? 'bg-black/60 backdrop-blur-xs flex items-center justify-center p-4' 
-                : 'bg-black/15'
-            }`}
-            onClick={() => setShowContextMenu(false)}
-          >
-            <motion.div
-              initial={isSmallScreen ? { opacity: 0, scale: 0.95, y: 10 } : { opacity: 0, scale: 0.92, y: 6 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={isSmallScreen ? { opacity: 0, scale: 0.95, y: 10 } : { opacity: 0, scale: 0.92, y: 6 }}
-              transition={{ duration: 0.15 }}
-              onClick={(e) => e.stopPropagation()}
-              style={
-                isSmallScreen
-                  ? {
-                      width: '100%',
-                      maxWidth: 320,
-                      maxHeight: 'min(480px, 82vh)',
-                    }
-                  : {
-                      position: 'fixed',
-                      left: `${contextCoords.x}px`,
-                      top: `${contextCoords.y}px`,
-                      width: 300,
-                      maxHeight: 'min(440px, calc(100vh - 32px))',
-                    }
-              }
-              className="bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col z-[101]"
-              dir={isRtl ? 'rtl' : 'ltr'}
-            >
-              {/* Menu Header (Removed as per user request) */}
-
-              {/* Selected snippet preview */}
-              {selectedRange?.text && (
-                <div className="px-3.5 py-2 bg-muted/20 border-b border-border/50 text-[11px] text-muted-foreground truncate italic">
-                  "{selectedRange.text.length > 35 ? selectedRange.text.slice(0, 35) + '…' : selectedRange.text}"
-                </div>
-              )}
-
-              {/* Actions List */}
-              <div className="p-1.5 overflow-y-auto flex-1 flex flex-col divide-y divide-border/20">
-                
-                {/* Standard Clipboard Actions */}
-                <div className="flex justify-between px-2 py-3 gap-2 bg-muted/20 mb-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      editor?.chain().focus().selectAll().run();
-                    }}
-                    className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl hover:bg-muted transition-colors text-foreground cursor-pointer"
-                  >
-                    <CheckSquare className="w-5 h-5 mb-1.5 text-foreground" />
-                    <span className="text-xs font-bold">{isRtl ? 'تحديد الكل' : 'Select All'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (selectedRange?.text) {
-                        navigator.clipboard.writeText(selectedRange.text);
-                        setShowContextMenu(false);
-                      }
-                    }}
-                    className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl hover:bg-muted transition-colors text-foreground cursor-pointer"
-                  >
-                    <Copy className="w-5 h-5 mb-1.5 text-foreground" />
-                    <span className="text-xs font-bold">{isRtl ? 'نسخ' : 'Copy'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (selectedRange?.text) {
-                        navigator.clipboard.writeText(selectedRange.text);
-                        editor?.chain().focus().deleteSelection().run();
-                        setShowContextMenu(false);
-                      }
-                    }}
-                    className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl hover:bg-muted transition-colors text-foreground cursor-pointer"
-                  >
-                    <Scissors className="w-5 h-5 mb-1.5 text-foreground" />
-                    <span className="text-xs font-bold">{isRtl ? 'قص' : 'Cut'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      editor?.chain().focus().deleteSelection().run();
-                      setShowContextMenu(false);
-                    }}
-                    className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-5 h-5 mb-1.5 text-destructive" />
-                    <span className="text-xs font-bold">{isRtl ? 'حذف' : 'Delete'}</span>
-                  </button>
-                </div>
-
-                {/* AI Quick Actions */}
-                <div className="flex flex-col divide-y divide-border/20 pt-1">
-                  {/* Custom Option: identical UI to other options in the list */}
-                  <div
-                    className="w-full text-left rtl:text-right px-3 py-2.5 transition-colors group flex items-center justify-between gap-3 hover:bg-muted active:bg-muted/80 cursor-pointer"
-                    onClick={() => {
-                      const currentRange = selectedRange || pendingSelectionRef.current;
-                      if (!currentRange || !currentRange.text.trim()) return;
-                      pendingSelectionRef.current = currentRange;
-                      setSelectedRange(currentRange);
-                      setShowContextMenu(false);
-                      setShowSelectionBubble(false);
-                      setCustomModalMode('selection');
-                      setCustomModalPrompt('');
-                      setSavePromptToActionList(false);
-                      setShowCustomPromptModal(true);
-                    }}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Sparkles className="w-4 h-4 text-foreground/80 shrink-0" />
-                      <span className="text-xs font-semibold text-foreground truncate">
-                        {isRtl ? 'طلب مخصص...' : 'Custom Prompt...'}
-                      </span>
-                    </div>
-                  </div>
-                  {(settings.quickActions || defaultQuickActions)
-                    .filter(a => a.enabled !== false)
-                    .map((action) => {
-                      const IconComponent = getActionIcon(action.icon);
-                      const isProcessing = isProcessingActionId === action.id;
-                      const isTranslate = action.prompt.includes('{{TARGET_LANGUAGE}}');
-
-                      return (
-                        <div
-                          key={action.id}
-                          className={`w-full text-left rtl:text-right px-3 py-2.5 transition-colors group flex items-center justify-between gap-3 hover:bg-muted active:bg-muted/80 ${
-                            isProcessing ? 'bg-muted/50' : ''
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            disabled={isProcessingActionId !== null}
-                            onClick={() => handleExecuteQuickAction(action)}
-                            className="flex-1 min-w-0 flex items-center justify-between gap-3 cursor-pointer text-left rtl:text-right"
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-7 h-7 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 group-hover:scale-105 transition-all">
-                                {isProcessing ? (
-                                  <Loader2 className="w-4 h-4 animate-spin text-foreground" />
-                                ) : (
-                                  <IconComponent className="w-4 h-4" />
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-xs font-semibold text-foreground transition-colors truncate">
-                                  {isRtl ? (action.nameAr || action.name) : action.name}
-                                </div>
-                              </div>
-                            </div>
-
-                            {isTranslate && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
-                                {isRtl ? 'لغات العالم' : 'All Languages'}
-                              </span>
-                            )}
-                          </button>
-
-                          {action.isCustom && (
-                            <button
-                              type="button"
-                              title={isRtl ? 'حذف الإجراء' : 'Delete action'}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                useAppStore.getState().removeQuickAction(action.id);
-                                showToast(isRtl ? 'تم حذف الإجراء' : 'Action deleted', 'success');
-                              }}
-                              className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
               </div>
             </motion.div>
           </div>
@@ -3441,7 +3092,15 @@ CRITICAL RULES:
                       type="button"
                       onClick={() => {
                         if (activeActionForLanguage) {
-                          handleExecuteQuickAction(activeActionForLanguage, lang.name);
+                          const currentRange = selectedRange || pendingSelectionRef.current;
+                          if (currentRange && currentRange.text.trim().length > 0) {
+                            handleExecuteQuickAction(activeActionForLanguage, lang.name);
+                          } else {
+                            setShowLanguagePicker(false);
+                            const prompt = activeActionForLanguage.prompt.replace('{{TARGET_LANGUAGE}}', lang.name);
+                            setActiveActionForLanguage(null);
+                            handleEnhance(prompt);
+                          }
                         }
                       }}
                       className="w-full text-left rtl:text-right px-3 py-2.5 rounded-xl hover:bg-primary/10 active:bg-primary/15 transition-colors flex items-center justify-between group cursor-pointer"
@@ -3554,13 +3213,6 @@ CRITICAL RULES:
           text-align: inherit;
           background-color: var(--muted);
           color: var(--foreground);
-        }
-        .tiptap p,
-        .tiptap h1,
-        .tiptap h2,
-        .tiptap h3,
-        .tiptap blockquote {
-          unicode-bidi: plaintext;
         }
         .tiptap p.is-editor-empty:first-child::before {
           color: var(--muted-foreground);

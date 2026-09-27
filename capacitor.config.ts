@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ulum.app',
+  appId: 'com.taqyeed.app',
   appName: 'Taqyeed AI',
   webDir: 'dist',
   android: {

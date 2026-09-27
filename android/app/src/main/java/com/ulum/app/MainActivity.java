@@ -1,4 +1,4 @@
-package com.ulum.app;
+package com.taqyeed.app;
 
 import android.os.Bundle;
 import android.webkit.WebSettings;

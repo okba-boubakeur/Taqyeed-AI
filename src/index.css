@@ -580,13 +580,11 @@ mark,
   color: #9ca3af !important;
 }
 
-/* ── Suppress native Android/iOS long-press context menu inside the editor ── */
-/* -webkit-touch-callout: none blocks the iOS callout popup.                   */
-/* -webkit-user-select: text keeps text selectable for our AI bubble.          */
+/* Native selection and touch callouts are enabled for standard mobile clipboard menus */
 .editing-view,
 .editing-view .ProseMirror,
 .editing-view .tiptap-wrapper {
-  -webkit-touch-callout: none;
+  -webkit-touch-callout: default;
 }
 
 @keyframes redWavePulse {

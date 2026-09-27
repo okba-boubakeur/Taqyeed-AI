@@ -18,7 +18,9 @@ import {
   Share2,
   Copy,
   Trash2,
-  Image
+  Image,
+  Mic,
+  FileAudio
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'motion/react';
@@ -126,28 +128,11 @@ export function Header({ onBack }: HeaderProps) {
               <ArrowLeft className={`w-5 h-5 ${isRtl ? 'rotate-180' : ''}`} strokeWidth={1.5} />
             </button>
           )}
-
-          {/* Theme Button: placed at the left side (light / night direct toggle) */}
-          <button
-            onClick={handleToggleTheme}
-            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95 cursor-pointer"
-            title={isNight ? (isRtl ? 'الوضع النهاري' : 'Light mode') : (isRtl ? 'الوضع الليلي' : 'Night mode')}
-          >
-            {isNight ? (
-              <Sun className="w-5 h-5 hover:rotate-45 transition-transform" strokeWidth={1.5} />
-            ) : (
-              <Moon className="w-5 h-5 hover:-rotate-12 transition-transform" strokeWidth={1.5} />
-            )}
-          </button>
         </div>
 
-        {/* Center: When Note is Open -> Display Note Title and Folder (if in folder); When on Dashboard -> Search Bar if open */}
+        {/* Center: When on Dashboard -> Search Bar if open */}
         {isNoteOpen ? (
-          <div className="flex-1 max-w-xs md:max-w-md mx-2 text-center select-none overflow-hidden animate-in fade-in duration-150">
-            <h1 className="text-sm md:text-base font-bold text-foreground truncate leading-tight">
-              {activeNote?.title || (isRtl ? 'ملاحظة' : 'Note')}
-            </h1>
-          </div>
+          <div className="flex-1" />
         ) : isSearchOpen ? (
           <div className="flex-1 max-w-lg mx-2 relative animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center bg-muted/70 rounded-full px-3 py-1.5 border border-border focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
@@ -183,8 +168,11 @@ export function Header({ onBack }: HeaderProps) {
           <div className="flex-1" />
         )}
 
-        {/* Right side: Search toggle (when home) + 3 dots menu */}
+        {/* Right side: Action Portal + Search toggle + 3 dots menu */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Action Portal for TextEditor buttons (Undo/Redo/Done) */}
+          <div id="header-actions-portal" className="flex items-center gap-1 sm:gap-2 mr-1 rtl:mr-0 rtl:ml-1 empty:hidden" />
+
           {/* Search Toggle Button: ONLY shown when note is NOT open */}
           {!isNoteOpen && !isSearchOpen && (
             <button
@@ -224,6 +212,30 @@ export function Header({ onBack }: HeaderProps) {
                   {/* ── CASE 1: Note is Open -> Strictly Note-Related Options + Settings ── */}
                   {isNoteOpen ? (
                     <>
+                      {/* 0. Record Audio */}
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('start-note-audio-recording'));
+                          setMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-foreground hover:bg-muted/80 transition-colors font-medium text-left rtl:text-right cursor-pointer"
+                      >
+                        <Mic className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        <span>{isRtl ? 'تسجيل صوتي' : 'Record Audio'}</span>
+                      </button>
+
+                      {/* 0.1 Import Audio */}
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('import-note-audio'));
+                          setMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-foreground hover:bg-muted/80 transition-colors font-medium text-left rtl:text-right cursor-pointer border-b border-border/50"
+                      >
+                        <FileAudio className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        <span>{isRtl ? 'استيراد ملف صوتي' : 'Import Audio'}</span>
+                      </button>
+
                       {/* 1. Export as PDF */}
                       <button
                         onClick={() => {
@@ -289,6 +301,22 @@ export function Header({ onBack }: HeaderProps) {
 
                       <div className="my-1 border-t border-border/60" />
 
+                      {/* Theme Toggle */}
+                      <button
+                        onClick={() => {
+                          handleToggleTheme();
+                          setMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-foreground hover:bg-muted/80 transition-colors font-medium text-left rtl:text-right cursor-pointer"
+                      >
+                        {isNight ? (
+                          <Sun className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        ) : (
+                          <Moon className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        )}
+                        <span>{isNight ? (isRtl ? 'الوضع النهاري' : 'Light mode') : (isRtl ? 'الوضع الليلي' : 'Night mode')}</span>
+                      </button>
+
                       {/* Settings link (kept as is leading to settings screen) */}
                       <button
                         onClick={() => {
@@ -338,6 +366,22 @@ export function Header({ onBack }: HeaderProps) {
                       </button>
 
                       <div className="my-1 border-t border-border/60" />
+
+                      {/* Theme Toggle */}
+                      <button
+                        onClick={() => {
+                          handleToggleTheme();
+                          setMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-foreground hover:bg-muted/80 transition-colors font-medium text-left rtl:text-right cursor-pointer"
+                      >
+                        {isNight ? (
+                          <Sun className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        ) : (
+                          <Moon className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                        )}
+                        <span>{isNight ? (isRtl ? 'الوضع النهاري' : 'Light mode') : (isRtl ? 'الوضع الليلي' : 'Night mode')}</span>
+                      </button>
 
                       {/* Settings link */}
                       <button

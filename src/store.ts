@@ -213,74 +213,7 @@ export const worldLanguages: WorldLanguage[] = [
   { code: "eo", name: "Esperanto", native: "Esperanto", nameAr: "الإسبرانتو" },
 ];
 
-export const defaultQuickActions: QuickActionItem[] = [
-  {
-    id: 'enhance',
-    name: 'Enhance',
-    nameAr: 'تحسين الصياغة',
-    icon: 'Sparkles',
-    enabled: true,
-    prompt: `You are an academic editor. Improve the selected text for clarity, grammar, punctuation, and readability. If the text contains Islamic phrases, names, or quotes, add appropriate honorary symbols and terms (e.g., ﷺ, رضي الله عنه, رحمه الله). Output only the enhanced text without introductory or concluding remarks.`,
-  },
-  {
-    id: 'complete',
-    name: 'Complete',
-    nameAr: 'إكمال النص والعبارة',
-    icon: 'Check',
-    enabled: true,
-    prompt: `You are an academic note completer. The user has jotted down an incomplete sentence, definition, hadith, verse, law, or quote. Complete the passage accurately using the most authoritative, established source. Append a brief inline citation or source tag at the very end in brackets. Output only the completed text and citation.`,
-  },
-  {
-    id: 'shorten',
-    name: 'Make it Shorter',
-    nameAr: 'تلخيص واختصار',
-    icon: 'Shrink',
-    enabled: true,
-    prompt: `Summarize the selected text into a concise, high-yield statement. Retain only the core concept, key variables, and conclusion. Remove conversational filler, redundant modifiers, and digressions. Output only the shortened text.`,
-  },
-  {
-    id: 'tashkeel',
-    name: 'Tashkeel',
-    nameAr: 'تشكيل الحركات',
-    icon: 'Feather',
-    enabled: true,
-    prompt: `أنت مدقق لغوي نحوي متخصص. اضبط النص العربي المختار بالحركات الإعرابية التامة (التشكيل الكامل) وفق قواعد النحو والصرف العربية السليمة. حافظ على علامات الترقيم كما هي، ولا تغيّر أي كلمة. أخرج النص المشكول فقط دون أي تعليق إضافي.`,
-  },
-  {
-    id: 'reference',
-    name: 'Reference',
-    nameAr: 'تخريج وإضافة المرجع',
-    icon: 'BookOpen',
-    enabled: true,
-    prompt: `You are a citation and referencing specialist. Detect the statement, ruling, theory, or quote in the selected text. Retain the user's text, and append a verified academic reference beneath it. If it is an Islamic text, cite the classical chapter/book and standard scholar attribution; if general academic, use APA format. Output the original text followed by the reference.`,
-  },
-  {
-    id: 'translate',
-    name: 'Translate',
-    nameAr: 'ترجمة أكاديمية',
-    icon: 'Languages',
-    enabled: true,
-    prompt: `You are a precision academic translator. Translate the selected text into {{TARGET_LANGUAGE}}. Maintain academic register, accurate technical/legal/theological terminology, and standard punctuation. Output only the direct translation.`,
-  },
-  {
-    id: 'bullets',
-    name: 'Transform to Bullets',
-    nameAr: 'تحويل إلى نقاط',
-    icon: 'List',
-    enabled: true,
-    prompt: `Convert the selected paragraph into a clean, hierarchical bulleted list. Group items logically, use inline bolding for key terms at the start of each bullet, and make the points easy to review for exam prep. Output only the bulleted list.`,
-  },
-  {
-    id: 'table',
-    name: 'Transform to Table',
-    nameAr: 'تحويل إلى جدول',
-    icon: 'Table',
-    enabled: true,
-    prompt: `Analyze the entities, steps, conditions, or comparisons in the selected text and convert them into a structured Markdown table. Choose clear column headers that match the data (e.g., Term | Definition, School of Thought | Ruling | Evidence, or Concept | Pros | Cons). Output only the table.`,
-  },
-];
-
-export const defaultGeneralActions: QuickActionItem[] = [
+export const defaultAiActions: QuickActionItem[] = [
   {
     id: 'improveAll',
     name: 'Improve & Verify',
@@ -313,7 +246,86 @@ export const defaultGeneralActions: QuickActionItem[] = [
     enabled: true,
     prompt: defaultAiActionPrompts.summarizeContent,
   },
+  {
+    id: 'table',
+    name: 'Transform to Table',
+    nameAr: 'تحويل إلى جدول',
+    icon: 'Table',
+    enabled: true,
+    prompt: `Analyze the entities, steps, conditions, or comparisons in the content and convert them into a structured Markdown table. Choose clear column headers that match the data (e.g., Term | Definition, School of Thought | Ruling | Evidence, or Concept | Pros | Cons). **CRITICAL**: You MUST write the table in the EXACT same language as the text. If the text mixes multiple languages, keep the same mixed languages in the table exactly as they appear in the text. Output only the table.`,
+  },
+  {
+    id: 'bullets',
+    name: 'Transform to Bullets',
+    nameAr: 'تحويل إلى نقاط',
+    icon: 'List',
+    enabled: true,
+    prompt: `Convert the content into a clean, hierarchical bulleted list. Group items logically, use inline bolding for key terms at the start of each bullet, and make the points easy to review for exam prep. Output only the bulleted list.`,
+  },
+  {
+    id: 'translate',
+    name: 'Translate',
+    nameAr: 'ترجمة أكاديمية',
+    icon: 'Languages',
+    enabled: true,
+    prompt: `You are a precision academic translator. Translate the content into {{TARGET_LANGUAGE}}. Maintain academic register, accurate technical/legal/theological terminology, and standard punctuation. Output only the direct translation.`,
+  },
+  {
+    id: 'tashkeel',
+    name: 'Tashkeel',
+    nameAr: 'تشكيل الحركات',
+    icon: 'Feather',
+    enabled: true,
+    prompt: `أنت مدقق لغوي نحوي متخصص. اضبط النص العربي بالحركات الإعرابية التامة (التشكيل الكامل) وفق قواعد النحو والصرف العربية السليمة. حافظ على علامات الترقيم كما هي، ولا تغيّر أي كلمة. أخرج النص المشكول فقط دون أي تعليق إضافي.`,
+  },
+  {
+    id: 'reference',
+    name: 'Reference & Citation',
+    nameAr: 'تخريج وإضافة المرجع',
+    icon: 'BookOpen',
+    enabled: true,
+    prompt: `You are a citation and referencing specialist. Detect the statement, ruling, theory, or quote in the text. Retain the user's text, and append a verified academic reference beneath it. If it is an Islamic text, cite the classical chapter/book and standard scholar attribution; if general academic, use APA format. Output the original text followed by the reference.`,
+  },
+  {
+    id: 'complete',
+    name: 'Complete Sentence',
+    nameAr: 'إكمال العبارة',
+    icon: 'Check',
+    enabled: true,
+    prompt: `You are an academic note completer. The user has jotted down an incomplete sentence, definition, hadith, verse, law, or quote. Complete the passage accurately using the most authoritative, established source. Append a brief inline citation or source tag at the very end in brackets. Output only the completed text and citation.`,
+  },
+  {
+    id: 'shorten',
+    name: 'Make it Shorter',
+    nameAr: 'اختصار مكثف',
+    icon: 'Shrink',
+    enabled: true,
+    prompt: `Summarize the text into a concise, high-yield statement. Retain only the core concept, key variables, and conclusion. Remove conversational filler, redundant modifiers, and digressions. Output only the shortened text.`,
+  },
 ];
+
+export const getEffectiveAiActions = (settings: Settings): QuickActionItem[] => {
+  if (settings.aiActions && settings.aiActions.length > 0) {
+    return settings.aiActions;
+  }
+  // Fallback: merge previously configured generalActions / quickActions if available
+  if (settings.generalActions || settings.quickActions) {
+    const combined = [...(settings.generalActions || []), ...(settings.quickActions || [])];
+    const seen = new Set<string>();
+    const result: QuickActionItem[] = [];
+    for (const a of combined) {
+      if (!seen.has(a.id)) {
+        seen.add(a.id);
+        result.push(a);
+      }
+    }
+    if (result.length > 0) return result;
+  }
+  return defaultAiActions;
+};
+
+export const defaultQuickActions: QuickActionItem[] = defaultAiActions;
+export const defaultGeneralActions: QuickActionItem[] = defaultAiActions;
 
 export type LLMProvider =
   | 'gemini'
@@ -347,9 +359,11 @@ export interface Settings {
   lightPaperColor?: string;
   darkPaperColor?: string;
   aiActionPrompts?: AiActionPrompts;
+  aiActions?: QuickActionItem[];
   quickActions?: QuickActionItem[];
   generalActions?: QuickActionItem[];
   selectedAiOption?: string;
+  enhancedRecording?: boolean;
 }
 
 interface AppState {
@@ -416,6 +430,11 @@ interface AppState {
   removeGeneralAction: (id: string) => void;
   resetGeneralActions: () => void;
   toggleGeneralAction: (id: string) => void;
+  addAiAction: (action: Omit<QuickActionItem, 'id'>) => void;
+  updateAiAction: (id: string, updates: Partial<QuickActionItem>) => void;
+  removeAiAction: (id: string) => void;
+  resetAiActions: () => void;
+  toggleAiAction: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -441,6 +460,7 @@ export const useAppStore = create<AppState>()(
         lightPaperColor: '#fafafa',
         darkPaperColor: '#171717',
         aiActionPrompts: defaultAiActionPrompts,
+        aiActions: defaultAiActions,
         quickActions: defaultQuickActions,
         generalActions: defaultGeneralActions,
         selectedAiOption: 'improveAll',
@@ -526,95 +546,182 @@ export const useAppStore = create<AppState>()(
       setActiveRecordingNoteId: (id) => set({ activeRecordingNoteId: id }),
       setActiveView: (view) => set({ activeView: view, activeScreen: view }),
       setPreviousView: (view) => set({ previousView: view }),
-      addQuickAction: (action) => set((state) => {
-        const id = `custom_${Date.now()}`;
-        const newActions = [...(state.settings.quickActions || defaultQuickActions), { ...action, id, isCustom: true }];
+      addAiAction: (action) => set((state) => {
+        const id = `action_${Date.now()}`;
+        const current = getEffectiveAiActions(state.settings);
+        const newActions = [...current, { ...action, id, isCustom: true }];
         return {
           settings: {
             ...state.settings,
-            quickActions: newActions
+            aiActions: newActions,
+            quickActions: newActions,
+            generalActions: newActions,
           }
         };
       }),
-      updateQuickAction: (id, updates) => set((state) => {
-        const current = state.settings.quickActions || defaultQuickActions;
+      updateAiAction: (id, updates) => set((state) => {
+        const current = getEffectiveAiActions(state.settings);
         const updated = current.map(a => a.id === id ? { ...a, ...updates } : a);
         return {
           settings: {
             ...state.settings,
-            quickActions: updated
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
           }
         };
       }),
-      removeQuickAction: (id) => set((state) => {
-        const current = state.settings.quickActions || defaultQuickActions;
+      removeAiAction: (id) => set((state) => {
+        const current = getEffectiveAiActions(state.settings);
         const filtered = current.filter(a => a.id !== id);
         return {
           settings: {
             ...state.settings,
-            quickActions: filtered
+            aiActions: filtered,
+            quickActions: filtered,
+            generalActions: filtered,
+          }
+        };
+      }),
+      resetAiActions: () => set((state) => ({
+        settings: {
+          ...state.settings,
+          aiActions: defaultAiActions,
+          quickActions: defaultAiActions,
+          generalActions: defaultAiActions,
+        }
+      })),
+      toggleAiAction: (id) => set((state) => {
+        const current = getEffectiveAiActions(state.settings);
+        const updated = current.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
+        return {
+          settings: {
+            ...state.settings,
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
+          }
+        };
+      }),
+      reorderAiActions: (actions) => set((state) => ({
+        settings: {
+          ...state.settings,
+          aiActions: actions,
+          quickActions: actions,
+          generalActions: actions,
+        }
+      })),
+      addQuickAction: (action) => set((state) => {
+        const id = `custom_${Date.now()}`;
+        const current = getEffectiveAiActions(state.settings);
+        const newActions = [...current, { ...action, id, isCustom: true }];
+        return {
+          settings: {
+            ...state.settings,
+            aiActions: newActions,
+            quickActions: newActions,
+            generalActions: newActions,
+          }
+        };
+      }),
+      updateQuickAction: (id, updates) => set((state) => {
+        const current = getEffectiveAiActions(state.settings);
+        const updated = current.map(a => a.id === id ? { ...a, ...updates } : a);
+        return {
+          settings: {
+            ...state.settings,
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
+          }
+        };
+      }),
+      removeQuickAction: (id) => set((state) => {
+        const current = getEffectiveAiActions(state.settings);
+        const filtered = current.filter(a => a.id !== id);
+        return {
+          settings: {
+            ...state.settings,
+            aiActions: filtered,
+            quickActions: filtered,
+            generalActions: filtered,
           }
         };
       }),
       resetQuickActions: () => set((state) => ({
         settings: {
           ...state.settings,
-          quickActions: defaultQuickActions
+          aiActions: defaultAiActions,
+          quickActions: defaultAiActions,
+          generalActions: defaultAiActions,
         }
       })),
       toggleQuickAction: (id) => set((state) => {
-        const current = state.settings.quickActions || defaultQuickActions;
+        const current = getEffectiveAiActions(state.settings);
         const updated = current.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
         return {
           settings: {
             ...state.settings,
-            quickActions: updated
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
           }
         };
       }),
       addGeneralAction: (action) => set((state) => {
         const id = `general_${Date.now()}`;
-        const newActions = [...(state.settings.generalActions || defaultGeneralActions), { ...action, id, isCustom: true }];
+        const current = getEffectiveAiActions(state.settings);
+        const newActions = [...current, { ...action, id, isCustom: true }];
         return {
           settings: {
             ...state.settings,
-            generalActions: newActions
+            aiActions: newActions,
+            quickActions: newActions,
+            generalActions: newActions,
           }
         };
       }),
       updateGeneralAction: (id, updates) => set((state) => {
-        const current = state.settings.generalActions || defaultGeneralActions;
+        const current = getEffectiveAiActions(state.settings);
         const updated = current.map(a => a.id === id ? { ...a, ...updates } : a);
         return {
           settings: {
             ...state.settings,
-            generalActions: updated
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
           }
         };
       }),
       removeGeneralAction: (id) => set((state) => {
-        const current = state.settings.generalActions || defaultGeneralActions;
+        const current = getEffectiveAiActions(state.settings);
         const filtered = current.filter(a => a.id !== id);
         return {
           settings: {
             ...state.settings,
-            generalActions: filtered
+            aiActions: filtered,
+            quickActions: filtered,
+            generalActions: filtered,
           }
         };
       }),
       resetGeneralActions: () => set((state) => ({
         settings: {
           ...state.settings,
-          generalActions: defaultGeneralActions
+          aiActions: defaultAiActions,
+          quickActions: defaultAiActions,
+          generalActions: defaultAiActions,
         }
       })),
       toggleGeneralAction: (id) => set((state) => {
-        const current = state.settings.generalActions || defaultGeneralActions;
+        const current = getEffectiveAiActions(state.settings);
         const updated = current.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
         return {
           settings: {
             ...state.settings,
-            generalActions: updated
+            aiActions: updated,
+            quickActions: updated,
+            generalActions: updated,
           }
         };
       }),

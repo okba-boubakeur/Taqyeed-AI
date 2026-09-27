@@ -5,6 +5,8 @@ import {
   defaultAiActionPrompts,
   AiActionPrompts,
   QuickActionItem,
+  defaultAiActions,
+  getEffectiveAiActions,
   defaultQuickActions,
   defaultGeneralActions,
   LLMProvider,
@@ -747,10 +749,9 @@ export function SettingsScreen() {
     }
   };
 
-  // ── Quick & General Actions State & Handlers ──
+  // ── Unified AI Actions State & Handlers ──
   const [editingAction, setEditingAction] = useState<QuickActionItem | null>(null);
   const [isCreatingAction, setIsCreatingAction] = useState(false);
-  const [actionTarget, setActionTarget] = useState<'quick' | 'general'>('quick');
   const [actionForm, setActionForm] = useState<{
     id?: string;
     name: string;
@@ -786,8 +787,7 @@ export function SettingsScreen() {
     }
   };
 
-  const handleOpenAddAction = (target: 'quick' | 'general' = 'quick') => {
-    setActionTarget(target);
+  const handleOpenAddAction = () => {
     setActionForm({
       name: '',
       nameAr: '',
@@ -799,8 +799,7 @@ export function SettingsScreen() {
     setIsCreatingAction(true);
   };
 
-  const handleOpenEditAction = (action: QuickActionItem, target: 'quick' | 'general' = 'quick') => {
-    setActionTarget(target);
+  const handleOpenEditAction = (action: QuickActionItem) => {
     setActionForm({
       id: action.id,
       name: action.name,
@@ -819,104 +818,55 @@ export function SettingsScreen() {
       return;
     }
 
-    if (actionTarget === 'general') {
-      const currentList = localSettings.generalActions || settings.generalActions || defaultGeneralActions;
-      if (editingAction) {
-        const updated = currentList.map(a =>
-          a.id === editingAction.id
-            ? { ...a, ...actionForm }
-            : a
-        );
-        setLocalSettings(prev => ({ ...prev, generalActions: updated }));
-        updateSettings({ generalActions: updated });
-        showToast(isRtl ? 'تم تحديث الإجراء بنجاح' : 'Action updated successfully', 'success');
-      } else {
-        const newAction: QuickActionItem = {
-          id: `general_${Date.now()}`,
-          name: actionForm.name.trim(),
-          nameAr: actionForm.nameAr.trim() || undefined,
-          icon: actionForm.icon,
-          prompt: actionForm.prompt.trim(),
-          enabled: actionForm.enabled,
-          isCustom: true,
-        };
-        const updated = [...currentList, newAction];
-        setLocalSettings(prev => ({ ...prev, generalActions: updated }));
-        updateSettings({ generalActions: updated });
-        showToast(isRtl ? 'تمت إضافة الإجراء بنجاح' : 'Action created successfully', 'success');
-      }
+    const currentList = getEffectiveAiActions(localSettings);
+    if (editingAction) {
+      const updated = currentList.map(a =>
+        a.id === editingAction.id
+          ? { ...a, ...actionForm }
+          : a
+      );
+      setLocalSettings(prev => ({ ...prev, aiActions: updated, quickActions: updated, generalActions: updated }));
+      updateSettings({ aiActions: updated, quickActions: updated, generalActions: updated });
+      showToast(isRtl ? 'تم تحديث الإجراء بنجاح' : 'Action updated successfully', 'success');
     } else {
-      const currentList = localSettings.quickActions || settings.quickActions || defaultQuickActions;
-      if (editingAction) {
-        const updated = currentList.map(a =>
-          a.id === editingAction.id
-            ? { ...a, ...actionForm }
-            : a
-        );
-        setLocalSettings(prev => ({ ...prev, quickActions: updated }));
-        updateSettings({ quickActions: updated });
-        showToast(isRtl ? 'تم تحديث الإجراء بنجاح' : 'Action updated successfully', 'success');
-      } else {
-        const newAction: QuickActionItem = {
-          id: `custom_${Date.now()}`,
-          name: actionForm.name.trim(),
-          nameAr: actionForm.nameAr.trim() || undefined,
-          icon: actionForm.icon,
-          prompt: actionForm.prompt.trim(),
-          enabled: actionForm.enabled,
-          isCustom: true,
-        };
-        const updated = [...currentList, newAction];
-        setLocalSettings(prev => ({ ...prev, quickActions: updated }));
-        updateSettings({ quickActions: updated });
-        showToast(isRtl ? 'تمت إضافة الإجراء بنجاح' : 'Action created successfully', 'success');
-      }
+      const newAction: QuickActionItem = {
+        id: `action_${Date.now()}`,
+        name: actionForm.name.trim(),
+        nameAr: actionForm.nameAr.trim() || undefined,
+        icon: actionForm.icon,
+        prompt: actionForm.prompt.trim(),
+        enabled: actionForm.enabled,
+        isCustom: true,
+      };
+      const updated = [...currentList, newAction];
+      setLocalSettings(prev => ({ ...prev, aiActions: updated, quickActions: updated, generalActions: updated }));
+      updateSettings({ aiActions: updated, quickActions: updated, generalActions: updated });
+      showToast(isRtl ? 'تمت إضافة الإجراء بنجاح' : 'Action created successfully', 'success');
     }
 
     setIsCreatingAction(false);
     setEditingAction(null);
   };
 
-  const handleDeleteAction = (id: string, target: 'quick' | 'general' = 'quick') => {
-    if (target === 'general') {
-      const currentList = localSettings.generalActions || settings.generalActions || defaultGeneralActions;
-      const updated = currentList.filter(a => a.id !== id);
-      setLocalSettings(prev => ({ ...prev, generalActions: updated }));
-      updateSettings({ generalActions: updated });
-      showToast(isRtl ? 'تم حذف الإجراء' : 'Action removed', 'info');
-    } else {
-      const currentList = localSettings.quickActions || settings.quickActions || defaultQuickActions;
-      const updated = currentList.filter(a => a.id !== id);
-      setLocalSettings(prev => ({ ...prev, quickActions: updated }));
-      updateSettings({ quickActions: updated });
-      showToast(isRtl ? 'تم حذف الإجراء' : 'Action removed', 'info');
-    }
+  const handleDeleteAction = (id: string) => {
+    const currentList = getEffectiveAiActions(localSettings);
+    const updated = currentList.filter(a => a.id !== id);
+    setLocalSettings(prev => ({ ...prev, aiActions: updated, quickActions: updated, generalActions: updated }));
+    updateSettings({ aiActions: updated, quickActions: updated, generalActions: updated });
+    showToast(isRtl ? 'تم حذف الإجراء' : 'Action removed', 'info');
   };
 
-  const handleToggleAction = (id: string, target: 'quick' | 'general' = 'quick') => {
-    if (target === 'general') {
-      const currentList = localSettings.generalActions || settings.generalActions || defaultGeneralActions;
-      const updated = currentList.map(a => a.id === id ? { ...a, enabled: a.enabled === false ? true : false } : a);
-      setLocalSettings(prev => ({ ...prev, generalActions: updated }));
-      updateSettings({ generalActions: updated });
-    } else {
-      const currentList = localSettings.quickActions || settings.quickActions || defaultQuickActions;
-      const updated = currentList.map(a => a.id === id ? { ...a, enabled: a.enabled === false ? true : false } : a);
-      setLocalSettings(prev => ({ ...prev, quickActions: updated }));
-      updateSettings({ quickActions: updated });
-    }
+  const handleToggleAction = (id: string) => {
+    const currentList = getEffectiveAiActions(localSettings);
+    const updated = currentList.map(a => a.id === id ? { ...a, enabled: a.enabled === false ? true : false } : a);
+    setLocalSettings(prev => ({ ...prev, aiActions: updated, quickActions: updated, generalActions: updated }));
+    updateSettings({ aiActions: updated, quickActions: updated, generalActions: updated });
   };
 
-  const handleResetActions = (target: 'quick' | 'general' = 'quick') => {
-    if (target === 'general') {
-      setLocalSettings(prev => ({ ...prev, generalActions: defaultGeneralActions }));
-      updateSettings({ generalActions: defaultGeneralActions });
-      showToast(isRtl ? 'تمت استعادة الإجراءات العامة الافتراضية' : 'Reset to default general actions', 'success');
-    } else {
-      setLocalSettings(prev => ({ ...prev, quickActions: defaultQuickActions }));
-      updateSettings({ quickActions: defaultQuickActions });
-      showToast(isRtl ? 'تمت استعادة الإجراءات السريعة الافتراضية' : 'Reset to default quick actions', 'success');
-    }
+  const handleResetActions = () => {
+    setLocalSettings(prev => ({ ...prev, aiActions: defaultAiActions, quickActions: defaultAiActions, generalActions: defaultAiActions }));
+    updateSettings({ aiActions: defaultAiActions, quickActions: defaultAiActions, generalActions: defaultAiActions });
+    showToast(isRtl ? 'تمت استعادة الإجراءات الافتراضية' : 'Reset to default AI actions', 'success');
   };
 
   const providerOptions = PROVIDER_CONFIGS.map(p => ({
@@ -1003,6 +953,38 @@ export function SettingsScreen() {
                         updateSettings({ language: val as any });
                       }}
                     />
+                  </div>
+
+                  {/* Enhanced Recording */}
+                  <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-0.5">
+                        {isRtl ? 'تسجيل محسن (يلتقط صوت النظام والميكروفون)' : 'Enhanced Recording (Mic + System Audio)'}
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        {isRtl 
+                          ? 'استخدم هذه الميزة لتسجيل صوت التطبيقات الأخرى (مثل الاجتماعات) مع الميكروفون. يتطلب إذن التقاط الشاشة.' 
+                          : 'Captures audio from other apps (e.g. meetings) alongside mic. Requires screen capture permission on Android.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextVal = !localSettings.enhancedRecording;
+                        setLocalSettings({ ...localSettings, enhancedRecording: nextVal });
+                        updateSettings({ enhancedRecording: nextVal });
+                      }}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                        localSettings.enhancedRecording ? 'bg-primary' : 'bg-muted'
+                      }`}
+                    >
+                      <span className="sr-only">Use enhanced recording</span>
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                          localSettings.enhancedRecording ? (isRtl ? '-translate-x-5' : 'translate-x-5') : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -1304,23 +1286,23 @@ export function SettingsScreen() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden space-y-5"
               >
-                {/* 1. General Edits (التعديلات العامة) */}
+                {/* Unified AI Actions Section */}
                 <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-bold text-foreground">
-                        {isRtl ? 'التعديلات العامة' : 'General edits'}
+                        {isRtl ? 'قائمة الإجراءات الذكية' : 'Unified AI Actions'}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {isRtl
-                          ? 'تخصيص إجراءات الزر العائم في محرر الملاحظات. يمكنك إضافة أو تعديل أو تفعيل أي إجراء في أي وقت.'
-                          : 'Customize floating AI actions in note editor. Add, edit, toggle, or remove actions anytime.'}
+                          ? 'تخصيص الإجراءات المتاحة في الزر العائم. إذا حددت نصاً يُطبّق الإجراء عليه، وإذا لم تحدد يُطبّق على كامل الملاحظة.'
+                          : 'Customize actions available in the floating AI button. Automatically applies to selected text when text is selected, or to the entire note if no text is selected.'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={() => handleResetActions('general')}
+                        onClick={handleResetActions}
                         className="px-3 py-1.5 rounded-lg border border-border bg-transparent hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                         title={isRtl ? 'استعادة الإجراءات الافتراضية' : 'Reset to default actions'}
                       >
@@ -1329,7 +1311,7 @@ export function SettingsScreen() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleOpenAddAction('general')}
+                        onClick={handleOpenAddAction}
                         className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -1338,9 +1320,9 @@ export function SettingsScreen() {
                     </div>
                   </div>
 
-                  {/* General Actions List (x2 grid view in a row) */}
+                  {/* Unified Actions Grid (x2 grid view in a row) */}
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                    {(localSettings.generalActions || settings.generalActions || defaultGeneralActions).map((action) => {
+                    {getEffectiveAiActions(localSettings).map((action) => {
                       const Icon = getActionIconComponent(action.icon);
                       const isEnabled = action.enabled !== false;
 
@@ -1373,7 +1355,7 @@ export function SettingsScreen() {
                           <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-1">
                             <button
                               type="button"
-                              onClick={() => handleToggleAction(action.id, 'general')}
+                              onClick={() => handleToggleAction(action.id)}
                               className={`w-8 h-4.5 rounded-full transition-colors relative cursor-pointer shrink-0 ${isEnabled ? 'bg-primary' : 'bg-muted'}`}
                               title={isEnabled ? (isRtl ? 'تعطيل' : 'Disable') : (isRtl ? 'تفعيل' : 'Enable')}
                             >
@@ -1385,7 +1367,7 @@ export function SettingsScreen() {
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => handleOpenEditAction(action, 'general')}
+                                onClick={() => handleOpenEditAction(action)}
                                 className="p-1.5 rounded-lg text-foreground hover:bg-muted transition-colors cursor-pointer"
                                 title={isRtl ? 'تعديل' : 'Edit'}
                               >
@@ -1393,110 +1375,7 @@ export function SettingsScreen() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteAction(action.id, 'general')}
-                                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                                title={isRtl ? 'حذف' : 'Delete'}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 2. Quick Edits (التعديلات السريعة) */}
-                <div className="pt-4 border-t border-border/60 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">
-                        {isRtl ? 'التعديلات السريعة' : 'Quick edits'}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {isRtl
-                          ? 'تخصيص الإجراءات السريعة التي تظهر عند النقر بزر الفأرة الأيمن أو تحديد نص. يمكنك إضافة أو تعديل أو حذف أي إجراء في أي وقت.'
-                          : 'Customize quick actions that appear on right-click or text selection. Add, edit, or remove any action anytime.'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleResetActions('quick')}
-                        className="px-3 py-1.5 rounded-lg border border-border bg-transparent hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title={isRtl ? 'استعادة الإجراءات الافتراضية' : 'Reset to default actions'}
-                      >
-                        <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{isRtl ? 'استعادة الافتراضية' : 'Reset Defaults'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenAddAction('quick')}
-                        className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>{isRtl ? 'إضافة إجراء جديد' : 'Add Action'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Quick Actions List (x2 grid view in a row) */}
-                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                    {(localSettings.quickActions || settings.quickActions || defaultQuickActions).map((action) => {
-                      const Icon = getActionIconComponent(action.icon);
-                      const isEnabled = action.enabled !== false;
-
-                      return (
-                        <div
-                          key={action.id}
-                          className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between gap-2.5 ${isEnabled
-                            ? 'bg-card/70 border-border hover:border-primary/40 shadow-xs'
-                            : 'bg-muted/20 border-border/40 opacity-60'
-                            }`}
-                        >
-                          {/* Top Row: Icon, Titles */}
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isEnabled ? 'text-primary' : 'text-muted-foreground'}`}>
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-xs font-bold text-foreground truncate">
-                                {isRtl ? (action.nameAr || action.name) : action.name}
-                              </h4>
-                              {action.nameAr && action.nameAr !== action.name && (
-                                <p className="text-[10px] text-muted-foreground truncate">
-                                  {isRtl ? action.name : action.nameAr}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Bottom Row: Toggle beside Edit & Delete buttons (no labels) */}
-                          <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleAction(action.id, 'quick')}
-                              className={`w-8 h-4.5 rounded-full transition-colors relative cursor-pointer shrink-0 ${isEnabled ? 'bg-primary' : 'bg-muted'}`}
-                              title={isEnabled ? (isRtl ? 'تعطيل' : 'Disable') : (isRtl ? 'تفعيل' : 'Enable')}
-                            >
-                              <span
-                                className={`block w-3.5 h-3.5 rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-3.5 rtl:-translate-x-3.5' : 'translate-x-0.5 rtl:-translate-x-0.5'}`}
-                              />
-                            </button>
-
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditAction(action, 'quick')}
-                                className="p-1.5 rounded-lg text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                title={isRtl ? 'تعديل' : 'Edit'}
-                              >
-                                <Edit2 className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteAction(action.id, 'quick')}
+                                onClick={() => handleDeleteAction(action.id)}
                                 className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                                 title={isRtl ? 'حذف' : 'Delete'}
                               >
@@ -1766,7 +1645,7 @@ export function SettingsScreen() {
                       rows={12}
                       value={actionForm.prompt}
                       onChange={(e) => setActionForm(prev => ({ ...prev, prompt: e.target.value }))}
-                      placeholder={actionTarget === 'general' ? (isRtl ? 'أدخل تعليمات وأمر الذكاء الاصطناعي لمعالجة الملاحظة كاملة...' : 'Enter prompt instructions for full note AI processing...') : (isRtl ? 'أدخل تعليمات وأمر الذكاء الاصطناعي للنص المحدد...' : 'Enter prompt instructions for what to do with selected text...')}
+                      placeholder={isRtl ? 'أدخل تعليمات وأمر الذكاء الاصطناعي لتنفيذ الإجراء...' : 'Enter prompt instructions for the AI action...'}
                       className="w-full min-h-[220px] bg-background border border-border rounded-xl p-3.5 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 leading-relaxed resize-y"
                     />
                   </div>

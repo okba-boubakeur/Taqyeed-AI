@@ -1,4 +1,4 @@
-package com.ulum.app;
+package com.taqyeed.app;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class AudioForegroundService extends Service {
-    public static final String CHANNEL_ID = "ulum_notes_audio_recording";
+    public static final String CHANNEL_ID = "taqyeed_notes_audio_recording";
     public static final int NOTIFICATION_ID = 9021;
     public static final String ACTION_START = "ACTION_START";
     public static final String ACTION_STOP = "ACTION_STOP";
@@ -47,7 +47,8 @@ public class AudioForegroundService extends Service {
         try {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             if (powerManager != null && (wakeLock == null || !wakeLock.isHeld())) {
-                wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "UlumNotes:AudioRecordingWakeLock");
+                wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                        "taqyeedNotes:AudioRecordingWakeLock");
                 wakeLock.acquire(12 * 60 * 60 * 1000L); // 12 hours max safety
             }
         } catch (Exception e) {
@@ -59,7 +60,7 @@ public class AudioForegroundService extends Service {
         notificationIntent.setAction(Intent.ACTION_MAIN);
         notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        
+
         int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
@@ -134,8 +135,7 @@ public class AudioForegroundService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Meeting Audio Recording",
-                    NotificationManager.IMPORTANCE_LOW
-            );
+                    NotificationManager.IMPORTANCE_LOW);
             channel.setDescription("Shows active meeting recording status and controls");
             channel.setShowBadge(false);
 
