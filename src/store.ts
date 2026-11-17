@@ -453,7 +453,7 @@ export const useAppStore = create<AppState>()(
         customApiKey: '',
         customApiBaseUrl: '',
         sidecarUrl: 'http://127.0.0.1:47195',
-        llmModel: 'gemini-2.5-flash',
+        llmModel: 'gemini-3.5-flash-lite',
         language: 'ar',
         theme: 'system',
         systemPrompt: defaultSystemPrompt,
@@ -728,7 +728,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'meeting-summarizer-settings',
-      version: 3,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         if (version < 2 && persistedState?.settings) {
           if (persistedState.settings.language === 'en') {
@@ -739,6 +739,18 @@ export const useAppStore = create<AppState>()(
         if (version < 3 && persistedState?.settings) {
           if (!persistedState.settings.llmProvider || persistedState.settings.llmProvider === 'sidecar') {
             persistedState.settings.llmProvider = 'gemini';
+          }
+        }
+        if (version < 5 && persistedState?.settings) {
+          if (
+            persistedState.settings.llmModel === 'gemini-2.5-flash' ||
+            persistedState.settings.llmModel === 'gemini-2.5-flash-lite' ||
+            persistedState.settings.llmModel === 'gemini-3.8-flash'
+          ) {
+            persistedState.settings.llmModel = 'gemini-3.5-flash-lite';
+          }
+          if (persistedState.settings.llmModel === 'deepseek-flash') {
+            persistedState.settings.llmModel = 'deepseek-chat';
           }
         }
         return persistedState;

@@ -109,12 +109,13 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'geminiApiKey',
     keyPlaceholder: 'Enter Gemini key (starts with AIzaSy)',
     keyPlaceholderAr: 'أدخل مفتاح Gemini (يبدأ بـ AIzaSy)',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-3.5-flash-lite',
     models: [
-      { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Recommended)' },
-      { value: 'gemini-2.5-flash-lite', label: 'gemini-2.5-flash-lite' },
-      { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash' },
-      { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' },
+      { value: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite (Universally Available - Recommended)' },
+      { value: 'gemini-3.8-flash', label: 'gemini-3.8-flash (High Intelligence)' },
+      { value: 'gemini-4-carbon', label: 'gemini-4-carbon (Frontier Reasoning)' },
+      { value: 'gemini-3.1-pro-preview', label: 'gemini-3.1-pro-preview (Complex Tasks)' },
+      { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Legacy)' },
     ],
     guide: {
       title: 'How to Get a Free Google Gemini API Key',
@@ -166,10 +167,12 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     defaultModel: 'openrouter/free',
     models: [
       { value: 'openrouter/free', label: 'openrouter/free (Recommended)' },
-      { value: 'google/gemini-2.5-flash', label: 'google/gemini-2.5-flash' },
+      { value: 'google/gemini-3.5-flash-lite', label: 'google/gemini-3.5-flash-lite' },
+      { value: 'google/gemini-3.8-flash', label: 'google/gemini-3.8-flash' },
       { value: 'deepseek/deepseek-chat', label: 'deepseek/deepseek-chat' },
-      { value: 'meta-llama/llama-3.3-70b-instruct', label: 'meta-llama/llama-3.3-70b-instruct' },
+      { value: 'anthropic/claude-sonnet-5-5', label: 'anthropic/claude-sonnet-5-5' },
       { value: 'anthropic/claude-3.5-sonnet', label: 'anthropic/claude-3.5-sonnet' },
+      { value: 'meta-llama/llama-3.3-70b-instruct', label: 'meta-llama/llama-3.3-70b-instruct' },
     ],
     guide: {
       title: 'How to Get an OpenRouter API Key',
@@ -218,12 +221,13 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'qwenApiKey',
     keyPlaceholder: 'Enter Qwen key (starts with sk-)',
     keyPlaceholderAr: 'أدخل مفتاح Qwen (يبدأ بـ sk-)',
-    defaultModel: 'qwen3.7-flash',
+    defaultModel: 'qwen-plus',
     models: [
-      { value: 'qwen3.7-flash', label: 'qwen3.7-flash (Recommended)' },
+      { value: 'qwen-plus', label: 'qwen-plus (Balanced - Recommended)' },
+      { value: 'qwen-turbo', label: 'qwen-turbo (Fast & Economical)' },
+      { value: 'qwen-max', label: 'qwen-max (Flagship Intelligence)' },
       { value: 'qwen3.8-flash', label: 'qwen3.8-flash' },
-      { value: 'qwen-plus', label: 'qwen-plus' },
-      { value: 'qwen-turbo', label: 'qwen-turbo' },
+      { value: 'qwen2.5-72b-instruct', label: 'qwen2.5-72b-instruct' },
     ],
     guide: {
       title: 'How to Get an Alibaba Qwen (DashScope) API Key',
@@ -272,17 +276,16 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'deepseekApiKey',
     keyPlaceholder: 'Enter DeepSeek key (starts with sk-)',
     keyPlaceholderAr: 'أدخل مفتاح DeepSeek (يبدأ بـ sk-)',
-    defaultModel: 'deepseek-flash',
+    defaultModel: 'deepseek-chat',
     models: [
-      { value: 'deepseek-flash', label: 'deepseek-flash (Routes to V4.1 with Cache - Recommended)' },
-      { value: 'deepseek-chat', label: 'deepseek-chat (DeepSeek-V3)' },
-      { value: 'deepseek-reasoner', label: 'deepseek-reasoner (DeepSeek-R1)' },
+      { value: 'deepseek-chat', label: 'deepseek-chat (DeepSeek-V3 - Recommended)' },
+      { value: 'deepseek-reasoner', label: 'deepseek-reasoner (DeepSeek-R1 Deep Reasoning)' },
     ],
     guide: {
       title: 'How to Get a DeepSeek API Key',
       titleAr: 'كيفية الحصول على مفتاح DeepSeek',
-      desc: 'DeepSeek delivers cutting-edge performance at ultra-low pricing ($0.15/1M in, cache hits drop to $0.003/1M). Routes directly to optimized endpoints.',
-      descAr: 'يقدم DeepSeek أداءً منافساً لأقوى النماذج وبأرخص سعر رمزي في العالم (0.15$ لكل مليون رمز، وتنخفض مع التخزين المؤقت إلى 0.003$).',
+      desc: 'DeepSeek delivers cutting-edge performance at ultra-low pricing ($0.15/1M in, cache hits drop to $0.003/1M). Routes directly to official V3 & R1 reasoning endpoints.',
+      descAr: 'يقدم DeepSeek أداءً منافساً لأقوى النماذج وبأرخص سعر رمزي في العالم (0.15$ لكل مليون رمز، وتنخفض مع التخزين المؤقت إلى 0.003$) عبر نموذجي V3 و R1 الرسميين.',
       steps: [
         {
           title: 'Open DeepSeek Platform',
@@ -315,8 +318,8 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     id: 'kimi',
     name: 'Kimi',
     nameAr: 'Kimi',
-    badge: '128k Context + Free Quota',
-    badgeAr: 'سياق 128k ورصيد ترحيبي',
+    badge: '1M Context + Free Quota',
+    badgeAr: 'سياق 1M ورصيد ترحيبي',
     logoDark: '/ai-providers/kimi.svg',
     logoLight: '/ai-providers/kimi.svg',
     officialKeyUrl: 'https://platform.moonshot.ai/console/api-keys',
@@ -325,19 +328,18 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'kimiApiKey',
     keyPlaceholder: 'Enter Moonshot/Kimi key (starts with sk-)',
     keyPlaceholderAr: 'أدخل مفتاح Kimi (يبدأ بـ sk-)',
-    defaultModel: 'kimi-k2.6',
+    defaultModel: 'kimi-k3.1-pro',
     models: [
-      { value: 'kimi-k2.6', label: 'kimi-k2.6 (Recommended)' },
+      { value: 'kimi-k3.1-pro', label: 'kimi-k3.1-pro (Flagship 1M Context - Recommended)' },
+      { value: 'kimi-k3.1-pro-highspeed', label: 'kimi-k3.1-pro-highspeed (High Speed)' },
       { value: 'kimi-k3', label: 'kimi-k3 (Flagship Intelligence)' },
-      { value: 'moonshot-v1-8k', label: 'moonshot-v1-8k' },
-      { value: 'moonshot-v1-32k', label: 'moonshot-v1-32k' },
-      { value: 'moonshot-v1-128k', label: 'moonshot-v1-128k (Long Context)' },
+      { value: 'kimi-k2.6', label: 'kimi-k2.6' },
     ],
     guide: {
       title: 'How to Get a Kimi (Moonshot AI) API Key',
       titleAr: 'كيفية الحصول على مفتاح Kimi (Moonshot AI)',
-      desc: 'Moonshot AI\'s Kimi specializes in long document processing and high context windows (up to 128k tokens), granting free trial quota upon registration.',
-      descAr: 'تتميز نماذج Kimi من Moonshot بقدرتها الفائقة على قراءة وتلخيص الوثائق الطويلة بسياق يصل لـ 128 ألف رمز، مع منح رصيد تجريبي مجاني عند إنشاء الحساب.',
+      desc: "Moonshot AI's Kimi specializes in long document processing and high context windows (up to 1M tokens), granting free trial quota upon registration.",
+      descAr: 'تتميز نماذج Kimi من Moonshot بقدرتها الفائقة على قراءة وتلخيص الوثائق الطويلة بسياق يصل لمليون رمز (1M)، مع منح رصيد تجريبي مجاني عند إنشاء الحساب.',
       steps: [
         {
           title: 'Open Moonshot Open Platform',
@@ -380,17 +382,19 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'grokApiKey',
     keyPlaceholder: 'Enter xAI key (starts with xai-)',
     keyPlaceholderAr: 'أدخل مفتاح xAI (يبدأ بـ xai-)',
-    defaultModel: 'grok-code-fast-1',
+    defaultModel: 'grok-4.7',
     models: [
-      { value: 'grok-code-fast-1', label: 'grok-code-fast-1 (Recommended)' },
+      { value: 'grok-4.7', label: 'grok-4.7 (Flagship Reasoning - Recommended)' },
       { value: 'grok-4.6', label: 'grok-4.6' },
-      { value: 'grok-beta', label: 'grok-beta' },
+      { value: 'grok-3', label: 'grok-3' },
+      { value: 'grok-code-fast-1', label: 'grok-code-fast-1' },
+      { value: 'grok-beta', label: 'grok-beta (Legacy)' },
     ],
     guide: {
       title: 'How to Get an xAI Grok API Key',
       titleAr: 'كيفية الحصول على مفتاح xAI Grok',
-      desc: 'xAI provides real-time world understanding and deep reasoning. Developer accounts frequently receive $25 monthly testing credits on the console.',
-      descAr: 'يوفر نموذج Grok من xAI استدلالاً سريعاً ومعرفة حية. وتحصل حسابات المطورين على رصيد تجريبي بقيمة 25 دولاراً شهرياً لاختبار النماذج.',
+      desc: 'xAI provides real-time world understanding and deep reasoning with the Grok 4 flagship family. Developer accounts frequently receive $25 monthly testing credits on the console.',
+      descAr: 'يوفر نموذج Grok 4 من xAI استدلالاً عميقاً ومعرفة حية متقدمة. وتحصل حسابات المطورين على رصيد تجريبي بقيمة 25 دولاراً شهرياً لاختبار النماذج.',
       steps: [
         {
           title: 'Open xAI Console',
@@ -433,18 +437,20 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'chatgptApiKey',
     keyPlaceholder: 'Enter OpenAI key (starts with sk-proj- or sk-)',
     keyPlaceholderAr: 'أدخل مفتاح OpenAI (يبدأ بـ sk-proj- أو sk-)',
-    defaultModel: 'gpt-4o-mini',
+    defaultModel: 'gpt-6.1-sol',
     models: [
-      { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Recommended)' },
-      { value: 'gpt-4o', label: 'gpt-4o' },
-      { value: 'o3-mini', label: 'o3-mini' },
-      { value: 'o1-mini', label: 'o1-mini' },
+      { value: 'gpt-6.1-sol', label: 'gpt-6.1-sol (Balanced Flagship - Recommended)' },
+      { value: 'gpt-6-luna', label: 'gpt-6-luna (Fast & Ultra-Low Cost)' },
+      { value: 'gpt-6-astra', label: 'gpt-6-astra (Heavy-Duty Frontier)' },
+      { value: 'gpt-6.1-terra', label: 'gpt-6.1-terra (Visual Scribe)' },
+      { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Legacy)' },
+      { value: 'gpt-4o', label: 'gpt-4o (Legacy)' },
     ],
     guide: {
       title: 'How to Get an OpenAI API Key',
       titleAr: 'كيفية الحصول على مفتاح OpenAI (ChatGPT)',
-      desc: 'OpenAI provides the world-renowned GPT model family. "gpt-4o-mini" offers extraordinary speed and low pricing (~$0.15/1M in). Requires an active credit balance ($5 min).',
-      descAr: 'توفر OpenAI عائلة نماذج GPT الشهيرة. ويعد نموذج gpt-4o-mini فائق السرعة والاقتصاد (~0.15 دولار لكل مليون رمز). يتطلب إضافة رصيد مسبق الدفع (5$ كحد أدنى).',
+      desc: 'OpenAI provides the world-renowned GPT model family. "gpt-6.1-sol" offers extraordinary reasoning and speed with low cost. Requires an active credit balance ($5 min).',
+      descAr: 'توفر OpenAI عائلة نماذج GPT الشهيرة. ويعد نموذج gpt-6.1-sol فائق القوة والسرعة والاقتصاد. يتطلب إضافة رصيد مسبق الدفع (5$ كحد أدنى).',
       steps: [
         {
           title: 'Open OpenAI Developer Platform',
@@ -487,17 +493,19 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     keyProp: 'anthropicApiKey',
     keyPlaceholder: 'Enter Claude key (starts with sk-ant-)',
     keyPlaceholderAr: 'أدخل مفتاح Claude (يبدأ بـ sk-ant-)',
-    defaultModel: 'claude-3-5-haiku-20241022',
+    defaultModel: 'claude-haiku-5-5',
     models: [
-      { value: 'claude-3-5-haiku-20241022', label: 'claude-3-5-haiku (Recommended)' },
-      { value: 'claude-3-5-sonnet-20241022', label: 'claude-3-5-sonnet' },
-      { value: 'claude-3-haiku-20240307', label: 'claude-3-haiku' },
+      { value: 'claude-haiku-5-5', label: 'claude-haiku-5-5 (Fast & Economical - Recommended)' },
+      { value: 'claude-sonnet-5-5', label: 'claude-sonnet-5-5 (Adaptive Reasoning)' },
+      { value: 'claude-opus-5-5', label: 'claude-opus-5-5 (Heavy-Duty Frontier)' },
+      { value: 'claude-3-5-sonnet-20241022', label: 'claude-3-5-sonnet (Legacy)' },
+      { value: 'claude-3-5-haiku-20241022', label: 'claude-3-5-haiku (Legacy)' },
     ],
     guide: {
       title: 'How to Get an Anthropic Claude API Key',
       titleAr: 'كيفية الحصول على مفتاح Anthropic Claude',
-      desc: 'Anthropic Claude models excel at scholarly prose, formatting, and careful instruction-following. "claude-3-5-haiku" delivers high speed and low cost. Requires prepaid credits ($5 min).',
-      descAr: 'تتفوق نماذج Claude في الصياغة الأكاديمية والترتيب اللغوي الدقيق. ويوفر نموذج claude-3-5-haiku سرعة عالية وتكلفة مناسبة جداً. يتطلب رصيداً مدفوعاً مسبقاً (5$).',
+      desc: 'Anthropic Claude models excel at scholarly prose, formatting, and careful instruction-following. "claude-haiku-5-5" delivers high speed and ultra-low cost. Requires prepaid credits ($5 min).',
+      descAr: 'تتفوق نماذج Claude في الصياغة الأكاديمية والترتيب اللغوي الدقيق. ويوفر نموذج claude-haiku-5-5 سرعة فائقة وتكلفة اقتصادية جداً. يتطلب رصيداً مدفوعاً مسبقاً (5$).',
       steps: [
         {
           title: 'Open Anthropic Console',
@@ -543,11 +551,12 @@ export const PROVIDER_CONFIGS: ProviderDefinition[] = [
     defaultModel: 'default',
     models: [
       { value: 'default', label: 'default (Custom Model)' },
-      { value: 'llama3', label: 'llama3' },
+      { value: 'llama3.3', label: 'llama3.3' },
       { value: 'llama3.2', label: 'llama3.2' },
-      { value: 'mistral', label: 'mistral' },
       { value: 'qwen2.5', label: 'qwen2.5' },
       { value: 'deepseek-r1', label: 'deepseek-r1' },
+      { value: 'deepseek-v3', label: 'deepseek-v3' },
+      { value: 'mistral', label: 'mistral' },
     ],
     guide: {
       title: 'How to Connect Any Custom / Local AI Server',
@@ -1589,8 +1598,18 @@ export function SettingsScreen() {
                 className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
                 dir={isRtl ? 'rtl' : 'ltr'}
               >
-                {/* Modal Header (Clean close button only) */}
-                <div className="px-4 py-3 border-b border-border/60 flex items-center justify-end">
+                {/* Modal Header */}
+                <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-muted rounded-lg text-foreground">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">
+                      {isRtl
+                        ? (editingAction ? 'تعديل الإجراء السريع' : 'إضافة إجراء ذكي جديد')
+                        : (editingAction ? 'Edit Quick Action' : 'Add New Smart Action')}
+                    </h3>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setIsCreatingAction(false)}

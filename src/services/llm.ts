@@ -40,33 +40,36 @@ export function getEffectiveApiKey(settings: Settings, providerOverride?: LLMPro
   }
 }
 
+export const UNIVERSAL_GEMINI_FALLBACK = 'gemini-3.5-flash-lite';
+
 /**
  * Returns default recommended cheapest model for each provider.
+ * 'gemini-3.5-flash-lite' is universally accessible across all Google AI Studio accounts (new & old, free tier).
  */
 export function getDefaultModelForProvider(provider: LLMProvider): string {
   switch (provider) {
     case 'gemini':
-      return 'gemini-2.5-flash';
+      return UNIVERSAL_GEMINI_FALLBACK;
     case 'openrouter':
       return 'openrouter/free';
     case 'qwen':
-      return 'qwen3.7-flash';
+      return 'qwen-plus';
     case 'deepseek':
-      return 'deepseek-flash';
+      return 'deepseek-chat';
     case 'kimi':
-      return 'kimi-k2.6';
+      return 'kimi-k3.1-pro';
     case 'grok':
-      return 'grok-code-fast-1';
+      return 'grok-4.7';
     case 'chatgpt':
-      return 'gpt-4o-mini';
+      return 'gpt-6.1-sol';
     case 'anthropic':
-      return 'claude-3-5-haiku-20241022';
+      return 'claude-haiku-5-5';
     case 'custom':
       return 'default';
     case 'sidecar':
       return 'gemini-flash';
     default:
-      return 'gemini-2.5-flash';
+      return UNIVERSAL_GEMINI_FALLBACK;
   }
 }
 
@@ -80,8 +83,12 @@ export function sanitizeModelName(model: string, provider: LLMProvider | string)
   if (provider === 'gemini') {
     m = m.replace(/^[a-zA-Z0-9_-]+\//, '');
     m = m.replace(/:(?:batch|free|default|nitro)$/i, '');
+    // Auto-migrate deprecated 2.5 models to universal 3.5-flash-lite
+    if (m === 'gemini-2.5-flash' || m === 'gemini-2.5-flash-lite') {
+      return UNIVERSAL_GEMINI_FALLBACK;
+    }
     if (!m || !m.includes('gemini')) {
-      return 'gemini-2.5-flash';
+      return UNIVERSAL_GEMINI_FALLBACK;
     }
     return m;
   }
@@ -96,29 +103,29 @@ export function sanitizeModelName(model: string, provider: LLMProvider | string)
     return m;
   }
 
-
   if (provider === 'qwen') {
-    return m || 'qwen3.7-flash';
+    return m || 'qwen-plus';
   }
 
   if (provider === 'deepseek') {
-    return m || 'deepseek-flash';
+    if (!m || m === 'deepseek-flash') return 'deepseek-chat';
+    return m;
   }
 
   if (provider === 'kimi') {
-    return m || 'kimi-k2.6';
+    return m || 'kimi-k3.1-pro';
   }
 
   if (provider === 'grok') {
-    return m || 'grok-code-fast-1';
+    return m || 'grok-4.7';
   }
 
   if (provider === 'chatgpt') {
-    return m || 'gpt-4o-mini';
+    return m || 'gpt-6.1-sol';
   }
 
   if (provider === 'anthropic') {
-    return m || 'claude-3-5-haiku-20241022';
+    return m || 'claude-haiku-5-5';
   }
 
   if (provider === 'custom') {
@@ -131,7 +138,7 @@ export function sanitizeModelName(model: string, provider: LLMProvider | string)
     return 'gemini-flash';
   }
 
-  return m || 'gemini-2.5-flash';
+  return m || UNIVERSAL_GEMINI_FALLBACK;
 }
 
 export interface ProviderEndpointConfig {
@@ -478,13 +485,32 @@ export async function testProviderApiKey(
           'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
+          model: 'claude-haiku-5-5',
           max_tokens: 1,
           messages: [{ role: 'user', content: 'test' }],
         }),
       });
       if (res.ok) {
         return { success: true };
+      }
+      if (res.status === 404) {
+        const fallbackRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': cleanKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 1,
+            messages: [{ role: 'user', content: 'test' }],
+          }),
+        });
+        if (fallbackRes.ok) {
+          return { success: true };
+        }
       }
       const data = await res.json().catch(() => ({}));
       const msg = data.error?.message || `HTTP ${res.status}: ${res.statusText}`;
@@ -644,10 +670,23 @@ export async function* streamSummaryFromAudio(
         { text: systemPrompt || defaultSystemPrompt },
       ];
 
-      const result = await ai.models.generateContentStream({
-        model: sanitizedGeminiModel,
-        contents: contentsPayload,
-      });
+      let result;
+      try {
+        result = await ai.models.generateContentStream({
+          model: sanitizedGeminiModel,
+          contents: contentsPayload,
+        });
+      } catch (streamErr: any) {
+        if (sanitizedGeminiModel !== UNIVERSAL_GEMINI_FALLBACK) {
+          console.warn(`[Audio LLM] Model ${sanitizedGeminiModel} failed (${streamErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+          result = await ai.models.generateContentStream({
+            model: UNIVERSAL_GEMINI_FALLBACK,
+            contents: contentsPayload,
+          });
+        } else {
+          throw streamErr;
+        }
+      }
 
       let fullText = '';
       for await (const chunk of result) {
@@ -690,10 +729,23 @@ export async function* streamSummaryFromAudio(
       { text: systemPrompt || defaultSystemPrompt },
     ];
 
-    const result = await ai.models.generateContentStream({
-      model: sanitizedGeminiModel,
-      contents: contentsPayload,
-    });
+    let result;
+    try {
+      result = await ai.models.generateContentStream({
+        model: sanitizedGeminiModel,
+        contents: contentsPayload,
+      });
+    } catch (streamErr: any) {
+      if (sanitizedGeminiModel !== UNIVERSAL_GEMINI_FALLBACK) {
+        console.warn(`[Audio LLM] Model ${sanitizedGeminiModel} failed (${streamErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+        result = await ai.models.generateContentStream({
+          model: UNIVERSAL_GEMINI_FALLBACK,
+          contents: contentsPayload,
+        });
+      } else {
+        throw streamErr;
+      }
+    }
 
     let fullText = '';
     for await (const chunk of result) {
@@ -748,10 +800,23 @@ Return ONLY the title text.`;
       try {
         const sanitizedModel = sanitizeModelName(model, 'gemini');
         const ai = new GoogleGenAI({ apiKey: effectiveKey });
-        const result = await ai.models.generateContent({
-          model: sanitizedModel,
-          contents: prompt,
-        });
+        let result;
+        try {
+          result = await ai.models.generateContent({
+            model: sanitizedModel,
+            contents: prompt,
+          });
+        } catch (modelErr: any) {
+          if (sanitizedModel !== UNIVERSAL_GEMINI_FALLBACK) {
+            console.warn(`[Gemini Title] Model ${sanitizedModel} failed (${modelErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+            result = await ai.models.generateContent({
+              model: UNIVERSAL_GEMINI_FALLBACK,
+              contents: prompt,
+            });
+          } else {
+            throw modelErr;
+          }
+        }
         const titleText = result.text?.trim();
         if (titleText) return titleText.replace(/^["']|["']$/g, '');
       } catch (err) {
@@ -819,10 +884,23 @@ ${text}
       try {
         const sanitizedModel = sanitizeModelName(model, 'gemini');
         const ai = new GoogleGenAI({ apiKey: effectiveKey });
-        const result = await ai.models.generateContent({
-          model: sanitizedModel,
-          contents: prompt,
-        });
+        let result;
+        try {
+          result = await ai.models.generateContent({
+            model: sanitizedModel,
+            contents: prompt,
+          });
+        } catch (modelErr: any) {
+          if (sanitizedModel !== UNIVERSAL_GEMINI_FALLBACK) {
+            console.warn(`[Gemini Summary] Model ${sanitizedModel} failed (${modelErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+            result = await ai.models.generateContent({
+              model: UNIVERSAL_GEMINI_FALLBACK,
+              contents: prompt,
+            });
+          } else {
+            throw modelErr;
+          }
+        }
         return result.text?.trim() || '';
       } catch (err) {
         console.warn('Gemini text summary failed:', err);
@@ -882,10 +960,23 @@ ${text}
       try {
         const sanitizedModel = sanitizeModelName(model, 'gemini');
         const ai = new GoogleGenAI({ apiKey: effectiveKey });
-        const result = await ai.models.generateContent({
-          model: sanitizedModel,
-          contents: prompt,
-        });
+        let result;
+        try {
+          result = await ai.models.generateContent({
+            model: sanitizedModel,
+            contents: prompt,
+          });
+        } catch (modelErr: any) {
+          if (sanitizedModel !== UNIVERSAL_GEMINI_FALLBACK) {
+            console.warn(`[Gemini Tashkeel] Model ${sanitizedModel} failed (${modelErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+            result = await ai.models.generateContent({
+              model: UNIVERSAL_GEMINI_FALLBACK,
+              contents: prompt,
+            });
+          } else {
+            throw modelErr;
+          }
+        }
         return result.text?.trim() || text;
       } catch (err) {
         console.warn('Gemini Tashkeel generation failed:', err);
@@ -954,10 +1045,23 @@ export async function* streamEnhanceContent(
           ? `${customPrompt}\n\nORIGINAL TEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format without conversational meta-commentary.`
           : `You are an expert editor and writing enhancer. Improve the following text while preserving its original meaning, citations, and intent.\n\nTEXT:\n${plainText}\n\nReturn ONLY the enhanced text in clean Markdown format.`;
 
-        const result = await ai.models.generateContentStream({
-          model: sanitizedModel,
-          contents: prompt,
-        });
+        let result;
+        try {
+          result = await ai.models.generateContentStream({
+            model: sanitizedModel,
+            contents: prompt,
+          });
+        } catch (modelErr: any) {
+          if (sanitizedModel !== UNIVERSAL_GEMINI_FALLBACK) {
+            console.warn(`[Gemini Enhance] Model ${sanitizedModel} failed (${modelErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+            result = await ai.models.generateContentStream({
+              model: UNIVERSAL_GEMINI_FALLBACK,
+              contents: prompt,
+            });
+          } else {
+            throw modelErr;
+          }
+        }
 
         let fullText = '';
         for await (const chunk of result) {
@@ -1031,12 +1135,27 @@ export async function executeTargetedQuickAction(
     try {
       const sanitizedModel = sanitizeModelName(model, 'gemini');
       const ai = new GoogleGenAI({ apiKey: effectiveKey });
-      const response = await ai.models.generateContent({
-        model: sanitizedModel,
-        contents: [
-          { text: `${systemInstruction}\n\nTEXT TO PROCESS:\n"""\n${selectedText}\n"""` },
-        ],
-      });
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: sanitizedModel,
+          contents: [
+            { text: `${systemInstruction}\n\nTEXT TO PROCESS:\n"""\n${selectedText}\n"""` },
+          ],
+        });
+      } catch (modelErr: any) {
+        if (sanitizedModel !== UNIVERSAL_GEMINI_FALLBACK) {
+          console.warn(`[Gemini QuickAction] Model ${sanitizedModel} failed (${modelErr?.message || 'error'}), retrying with universal fallback '${UNIVERSAL_GEMINI_FALLBACK}'...`);
+          response = await ai.models.generateContent({
+            model: UNIVERSAL_GEMINI_FALLBACK,
+            contents: [
+              { text: `${systemInstruction}\n\nTEXT TO PROCESS:\n"""\n${selectedText}\n"""` },
+            ],
+          });
+        } else {
+          throw modelErr;
+        }
+      }
       const text = response.text || '';
       if (text.trim()) return text.trim();
     } catch (err) {
